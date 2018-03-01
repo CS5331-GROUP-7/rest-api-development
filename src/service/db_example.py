@@ -3,7 +3,7 @@ import os
 import sys
 import datetime
 import flask
-
+import bson
 sys.path.insert(0, os.path.realpath(os.path.join(os.path.dirname(__file__), '../../')))
 
 from flask_mongoengine import MongoEngine
@@ -24,7 +24,7 @@ class User(db.Document):
     registered_date = db.DateTimeField(default=datetime.datetime.now)
 
     def __repr__(self):
-        return '%s:%s'%(self.name,self.password)
+        return 'id=%s, data = [%s:%s]'%(self.pk,self.name,self.password)
 
 class Token(db.Document):
     expiry = db.DateTimeField(default=datetime.datetime.now)
@@ -53,6 +53,9 @@ def test_delete():
     objs=User.objects(name='TestUser')
     objs[0].delete()
 
+def test_searchby_pk():
+    pk = User.objects()[0].pk
+    print User.objects(pk=pk)
 User.drop_collection()#clear all User collection
 test_insert()
 print User.objects()
@@ -60,5 +63,6 @@ test_update()
 print User.objects()
 test_delete()
 print User.objects()
-print User.objects(name='dfdf').first()
+test_searchby_pk()
+
 

@@ -46,6 +46,7 @@ class User(db.Document):
 class Token(db.Document):
     token = db.StringField()
     expiry = db.DateTimeField(default=datetime.datetime.now)
+    data = db.StringField()
 
     def __str__(self):
         return self.__repr__();
@@ -99,8 +100,6 @@ def users_register():
     password = request.form.get('password')
     fullname = request.form.get('fullname')
     age  = request.form.get('age')
-    print username
-    print password
     to_serialize={'status':False}
     code = 200
     if username is None or fullname is None or age is None or password is None:
@@ -126,15 +125,15 @@ def users_register():
 
 @app.route("/users/authenticate",methods=['POST'])
 def users_authenticate():
-
     username = request.form.get('username')
     password = request.form.get('password')
 
 
     hashed_password = hashlib.sha512(password + SALT+username).hexdigest()
     token = None
-    if User.objects(hashed_password=hashed_password).first() is not None:
-        token = Token(token=str(uuid.uuid4()))
+    user = User.objects(hashed_password=hashed_password).first()
+    if  user is not None:
+        token = Token(token=str(uuid.uuid4()),data = user.pk)
         token.save()
 
     to_serialize={'status':False}
@@ -144,8 +143,6 @@ def users_authenticate():
     elif token is  not None:
         to_serialize['status']=True
         to_serialize['token'] = token.token
-
-
 
     #todo make the json_response() better
     response = app.response_class(
