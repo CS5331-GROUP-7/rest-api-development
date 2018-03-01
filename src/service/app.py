@@ -133,7 +133,8 @@ def users_authenticate():
     token = None
     user = User.objects(hashed_password=hashed_password).first()
     if  user is not None:
-        token = Token(token=str(uuid.uuid4()),data = user.pk)
+        data = {'pk':str(user.pk),'ip':request.remote_addr}
+        token = Token(token=str(uuid.uuid4()),data =  json.dumps(data))
         token.save()
 
     to_serialize={'status':False}
