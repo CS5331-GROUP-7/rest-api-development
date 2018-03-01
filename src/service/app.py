@@ -45,13 +45,24 @@ class User(db.Document):
 
 class Token(db.Document):
     token = db.StringField()
-    expiry = db.DateTimeField(default=datetime.datetime.now)
+    expiry = db.DateTimeField(default=datetime.datetime.now()+datetime.timedelta(days=1))
+    isexpired = db.BooleanField()
     data = db.StringField()
 
     def __str__(self):
         return self.__repr__();
     def __repr__(self):
         return '%s'%(self.expiry)
+
+def is_token_valid(token_str):
+    token = Token.objects(token=token_str).first()
+    if token is None:return False
+    if token.isexpired:return False
+    if token.expiry<datetime.datetime.now():return False
+
+    token_data = json.loads(token.data)
+    if request.remote_addr != token_data['ip']:return False
+    return True
 
 app = Flask(__name__)
 # Enable cross origin sharing for all endpoints
@@ -144,12 +155,12 @@ def users_authenticate():
     elif token is  not None:
         to_serialize['status']=True
         to_serialize['token'] = token.token
-
     #todo make the json_response() better
     response = app.response_class(
         response=json.dumps(to_serialize),
         status=code,
         mimetype='application/json'
+
     )
     return response
 
