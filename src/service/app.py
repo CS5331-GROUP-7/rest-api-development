@@ -25,6 +25,7 @@ app.debug = True
 db = MongoEngine()
 db.init_app(app)
 SALT =  'IfHYBwi5ZUFZD9VaonnK'
+id = 0 
 '''
 todo:move this to separte file
 '''
@@ -53,6 +54,14 @@ class Token(db.Document):
         return self.__repr__();
     def __repr__(self):
         return '%s'%(self.expiry)
+
+class Diary(db.Document):
+	userid = db.StringField()
+	title = db.BooleanField()
+	public = db.StringField()
+	text = db.StringField()
+	id = db.IntField(primary_key=True)
+
 
 def is_token_valid(token_str):
     token = Token.objects(token=token_str).first()
@@ -144,7 +153,7 @@ def users_authenticate():
     token = None
     user = User.objects(hashed_password=hashed_password).first()
     if  user is not None:
-        data = {'pk':str(user.pk),'ip':request.remote_addr}
+        data = {'pk':str(user.s),'ip':request.remote_addr}
         token = Token(token=str(uuid.uuid4()),data =  json.dumps(data))
         token.save()
 
@@ -163,6 +172,34 @@ def users_authenticate():
 
     )
     return response
+
+@app.route("/diary/create",methods=['POST'])
+def diary_creation():
+    token = request.form.get('token')
+    #if is_token_valid(token) == False:
+    #	code = 201
+    #	to_serialize['status'] = False
+    #	to_serialize['error'] = 'Invalid authentication token.'
+    if True:
+    	code = 200
+    	userid = token[0].data.pk
+    	title = request.form.get('title')
+    	text = request.form.get('text')
+    	public = request.form.get('public') 
+    	id = id + 1
+    	Diary( userid= userid,title=title,text=text,public=public,id=id).save()
+    	to_serialize['status'] = True
+    	to_serialize['id'] = id
+
+    #todo make the json_response() better
+    response = app.response_class(
+        response=json.dumps(to_serialize),
+        status=code,
+        mimetype='application/json'
+
+    )
+    return response
+
 
 @app.route("/meta/heartbeat")
 def meta_heartbeat():
