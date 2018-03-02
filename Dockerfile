@@ -5,9 +5,6 @@ RUN apt-get install -y apache2
 RUN pip install -U pip
 RUN pip install -U flask
 RUN pip install -U flask-cors
-RUN pip install -U pymongo
-RUN pip install -U flask-sqlalchemy
-RUN pip install -U flask-mongoengine
 RUN echo "ServerName localhost  " >> /etc/apache2/apache2.conf
 RUN echo "$user     hard    nproc       20" >> /etc/security/limits.conf
 ADD ./src/service /service
