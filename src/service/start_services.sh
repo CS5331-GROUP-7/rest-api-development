@@ -1,4 +1,4 @@
 #!/bin/bash
 
 apachectl start
-python app.py
+python /service/app.py
