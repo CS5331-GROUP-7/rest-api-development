@@ -1,0 +1,25 @@
+version: '2'
+services:
+    app:
+        build: Dockerfiles/app
+        ports:
+            - "8080:8080"
+        depends_on:
+            - mongodb
+        volumes:
+            - ./src:/usr/src/app
+
+    web:
+        image: apache
+        build: Dockerfiles/web
+        ports:
+            - "80:80"
+        volumes:
+            - ./src/html:/var/www/html
+
+    mongodb:
+        build: Dockerfiles/mongodb
+        volumes:
+            - /data
+        ports:
+            - "27017:27017"
