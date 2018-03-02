@@ -1,4 +1,5 @@
 #!/bin/sh
-sudo apt install python-pip
+set -e
+apt install python-pip -y
 pip install --upgrade pip
 pip install -r requirements.txt --user

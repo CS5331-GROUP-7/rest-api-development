@@ -1,7 +1,9 @@
 version: '2'
 services:
     app:
-        build: Dockerfiles/app
+        build:
+            context: ./
+            dockerfile: Dockerfiles/app/Dockerfile-dev
         ports:
             - "8080:8080"
         depends_on:
@@ -18,6 +20,6 @@ services:
             - ./src/html:/var/www/html
 
     mongodb:
-        build: Dockerfiles/mongodb
+        image: mongo:latest
         volumes:
             - /data

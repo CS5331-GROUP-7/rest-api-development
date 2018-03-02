@@ -18,14 +18,15 @@ from flask_mongoengine import MongoEngine
 
 app = flask.Flask(__name__)
 app.config.from_object(__name__)
-app.config['MONGODB_SETTINGS'] = {'DB': 'db_test'}
+app.config['MONGODB_SETTINGS'] = {'db': 'db_test',
+                                  'host':'mongodb'}
 app.config['TESTING'] = True
 app.config['SECRET_KEY'] = 'flask+mongoengine=<3'
 app.debug = True
 db = MongoEngine()
 db.init_app(app)
 SALT =  'IfHYBwi5ZUFZD9VaonnK'
-id = 0 
+id = 0
 '''
 todo:move this to separte file
 '''
@@ -185,7 +186,7 @@ def diary_creation():
     	userid = token[0].data.pk
     	title = request.form.get('title')
     	text = request.form.get('text')
-    	public = request.form.get('public') 
+    	public = request.form.get('public')
     	id = id + 1
     	Diary( userid= userid,title=title,text=text,public=public,id=id).save()
     	to_serialize['status'] = True
@@ -209,9 +210,7 @@ def meta_heartbeat():
 
 @app.route("/meta/members")
 def meta_members():
-    """Returns a list of team members"""
-    with open("./team_members.txt") as f:
-        team_members = f.read().strip().split("\n")
+    team_members = ['Zawlin','Xue Xi','ShiQing','ChenHui']
     return make_json_response(team_members)
 
 

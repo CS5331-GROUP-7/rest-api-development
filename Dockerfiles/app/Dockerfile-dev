@@ -1,0 +1,13 @@
+FROM ubuntu:latest
+
+RUN sed -i 's/archive\.ubuntu\.com/ap-southeast-1\.ec2\.archive\.ubuntu\.com/g' /etc/apt/sources.list &&\
+    apt update
+ADD setup.sh requirements.txt /
+RUN sh setup.sh
+RUN rm setup.sh requirements.txt
+
+WORKDIR /usr/src/app
+
+EXPOSE 8080
+# figure out how to change this based on ENV
+CMD ["sh", "-c", "FLASK_DEBUG=1 FLASK_APP=/usr/src/app/service/app.py python -m flask run -p 8080 -h 0.0.0.0"]

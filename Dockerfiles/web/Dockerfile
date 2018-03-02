@@ -8,4 +8,4 @@ RUN echo "$user     hard    nproc       20" >> /etc/security/limits.conf
 
 WORKDIR /var/www/html
 EXPOSE 80
-CMD ["apachectl", "-D", "FOREGROUND"]
+CMD rm -f /var/run/apache2/apache2.pid && apachectl -D FOREGROUND
