@@ -18,7 +18,8 @@ from flask_mongoengine import MongoEngine
 
 app = flask.Flask(__name__)
 app.config.from_object(__name__)
-app.config['MONGODB_SETTINGS'] = {'DB': 'db_test'}
+app.config['MONGODB_SETTINGS'] = {'db': 'db_test',
+                                  'host': 'mongodb'}
 app.config['TESTING'] = True
 app.config['SECRET_KEY'] = 'flask+mongoengine=<3'
 app.debug = True
@@ -382,9 +383,7 @@ def meta_heartbeat():
 
 @app.route("/meta/members")
 def meta_members():
-    """Returns a list of team members"""
-    with open("./team_members.txt") as f:
-        team_members = f.read().strip().split("\n")
+    team_members = ['Zawlin', 'Xue Xi', 'ShiQing', 'ChenHui']
     return make_json_response(team_members)
 
 @app.route("/diary")
