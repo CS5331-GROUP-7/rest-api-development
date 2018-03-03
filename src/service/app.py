@@ -30,6 +30,21 @@ SALT = 'IfHYBwi5ZUFZD9VaonnK'
 todo:move this to separte file
 '''
 
+def db_object_to_json(doc):
+    ret = {}
+    print doc._fields
+    #field_dict = doc.get_fields_info()
+    for field in doc._fields:
+        app.logger.info(field)
+        ret[field] = str(doc[field])
+    return  json.dumps(ret)
+def db_object_to_dict(doc):
+    ret = {}
+    #field_dict = doc.get_fields_info()
+    for field in doc._fields:
+        app.logger.info(field)
+        ret[field] = str(doc[field])
+    return ret
 
 class User(db.Document):
     username = db.StringField()
@@ -38,13 +53,12 @@ class User(db.Document):
     fullname = db.StringField()
     age = db.IntField()
     registered_date = db.DateTimeField(default=datetime.datetime.now)
-    userid = db.StringField()
 
     def __str__(self):
         return self.__repr__();
 
     def __repr__(self):
-        return '%s:%s' % (self.username, self.hashed_password)
+        return db_object_to_json(self)
 
 
 class Token(db.Document):
@@ -57,26 +71,21 @@ class Token(db.Document):
         return self.__repr__();
 
     def __repr__(self):
-        return '%s' % (self.expiry)
+        return db_object_to_json(self)
 
 
 class Diary(db.Document):
-    id = db.IntField(primary_key=True)
+    id = db.SequenceField()
     title = db.StringField()
     username = db.StringField()
     published_time = db.StringField()  # ISO8601
     public = db.BooleanField()
     text = db.StringField()
 
+    def __str__(self):
+        return self.__repr__();
     def __repr__(self):
-        return '%s %s' % (self.username, self.title)
-
-
-class Counter(db.Document):
-    count = db.IntField()
-
-    def __repr__(self):
-        return 'counter = %d' % (self.count)
+        return db_object_to_json(self)
 
 
 def is_token_valid(token_str):
@@ -98,9 +107,6 @@ CORS(app)
 ENDPOINT_LIST = ['/', '/meta/heartbeat', '/meta/members',
                  '/users', '/users/register', '/users/authenticate', '/users/expire',
                  '/diary', '/diary/create', '/diary/delete', '/diary/permission']
-# Init the counter
-count = Counter(count=0)
-count.save()
 
 
 def make_json_response(data, status=True, code=200):
@@ -190,9 +196,6 @@ def users_register():
         # note our 'salt' is actually salt+username for extra safety
         hashed_password = hashlib.sha512(password + SALT + username).hexdigest()
         User(username=username, hashed_password=hashed_password, fullname=fullname, age=age).save()
-        user = User.objects(username=username).first()
-        userid = str(user.pk)
-        user.update(userid=userid)
         code = 201
 
     # todo make the json_response() better
@@ -258,6 +261,7 @@ def users_expire():
     return response
 
 
+
 @app.route("/diary")
 def diary():
     to_serialize = {'status': False}
@@ -271,7 +275,6 @@ def diary():
     to_serialize['status'] = True
     to_serialize['result'] = result
 
-    # todo make the json_response() better
     response = app.response_class(
         response=json.dumps(to_serialize),
         status=code,
@@ -334,10 +337,6 @@ def diary_creation():
         title = payload2['title']
         text = payload2['text']
         public = payload2['public']
-        count = Counter.objects()[0]
-        count1 = count.count + 1
-        id = count1
-        count.update(count=count1)
         dtnow = datetime.datetime.now()
         published_time = dtnow.isoformat()
 
@@ -417,6 +416,33 @@ def diary_permission():
     return response
 
 
+@app.route("/debug/resetdb")
+def debug_resetdb():
+    to_serialize={'status':'success'}
+    User.drop_collection()
+    Token.drop_collection()
+    Diary.drop_collection()
+    code = 200
+    response = app.response_class(
+        response=json.dumps(to_serialize),
+        status=code,
+        mimetype='application/json'
+    )
+    return response
+
+@app.route("/debug/rawdb")
+def debug_getrawdb():
+    to_serialize={'status':'success'}
+    to_serialize['users']=[db_object_to_dict(usr) for usr in User.objects()]
+    to_serialize['tokens']=[db_object_to_dict(token) for token in Token.objects()]
+    to_serialize['diaries']=[db_object_to_dict(diary) for diary in Diary.objects()]
+    code = 200
+    response = app.response_class(
+        response=json.dumps(to_serialize),
+        status=code,
+        mimetype='application/json'
+    )
+    return response
 if __name__ == '__main__':
     # Change the working directory to the script directory
     abspath = os.path.abspath(__file__)
