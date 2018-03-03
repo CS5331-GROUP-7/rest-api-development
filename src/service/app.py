@@ -144,12 +144,11 @@ def meta_members():
 def users():
     to_serialize = {'status': False}
     token_str = request.form.get('token')
+    code = 200
     if is_token_valid(token_str) == False:
-        code = 201
         to_serialize['status'] = False
         to_serialize['error'] = 'Invalid authentication token.'
     else:
-        code = 200
         token = Token.objects(token=token_str).first()
         data = json.loads(token.data)
         pk = data['pk']
@@ -238,11 +237,10 @@ def users_authenticate():
 def users_expire():
     to_serialize = {'status': False}
     token_str = request.form.get('token')
+    code = 200
     if is_token_valid(token_str) == False:
-        code = 201
         to_serialize['status'] = False
     else:
-        code = 200
         token = Token.objects(token=token_str).first()
         token.delete()
         to_serialize['status'] = True
@@ -282,12 +280,11 @@ def diary():
 def diary_post():
     to_serialize = {'status': False}
     token_str = request.form.get('token')
+    code = 200
     if is_token_valid(token_str) == False:
-        code = 201
         to_serialize['status'] = False
         to_serialize['error'] = 'Invalid authentication token.'
     else:
-        code = 200
         token = Token.objects(token=token_str).first()
         data = json.loads(token.data)
         pk = data['pk']
@@ -317,12 +314,11 @@ def diary_post():
 def diary_creation():
     to_serialize = {'status': False}
     token_str = request.form.get('token')
+    code = 200
     if is_token_valid(token_str) == False:
-        code = 201
         to_serialize['status'] = False
         to_serialize['error'] = 'Invalid authentication token.'
     else:
-        code = 200
         token = Token.objects(token=token_str).first()
         data = json.loads(token.data)
         pk = data['pk']
@@ -356,12 +352,11 @@ def diary_creation():
 def diary_delete():
     to_serialize = {'status': False}
     token_str = request.form.get('token')
+    code = 200
     if is_token_valid(token_str) == False:
-        code = 201
         to_serialize['status'] = False
         to_serialize['error'] = 'Invalid authentication token.'
     else:
-        code = 200
         token = Token.objects(token=token_str).first()
         data = json.loads(token.data)
         pk = data['pk']
@@ -387,12 +382,11 @@ def diary_delete():
 def diary_permission():
     to_serialize = {'status': False}
     token_str = request.form.get('token')
+    code = 200
     if is_token_valid(token_str) == False:
-        code = 201
         to_serialize['status'] = False
         to_serialize['error'] = 'Invalid authentication token.'
     else:
-        code = 200
         token = Token.objects(token=token_str).first()
         data = json.loads(token.data)
         pk = data['pk']
