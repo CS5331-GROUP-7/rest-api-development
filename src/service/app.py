@@ -78,6 +78,14 @@ def is_token_valid(token_str):
     return True
 
 
+def is_valid_uuid(uuid_str):
+    try:
+        val = uuid.UUID(uuid_str, version=4)
+    except:
+        return False
+    return str(val) == uuid_str
+
+
 app = Flask(__name__)
 # Enable cross origin sharing for all endpoints
 CORS(app)
@@ -179,6 +187,25 @@ def users_authenticate():
 
     )
     return response
+
+
+@app.route("/users/expire", methods=['POST'])
+def users_expire():
+    token_str = request.form.get('token')
+    code = 200
+    to_serialize = {'status': False}
+
+    if is_valid_uuid(token_str) and is_token_valid(token_str):
+        token = Token.objects(token=token_str).first()
+        token.isexpired = True
+        token.save()
+        to_serialize['status'] = True
+
+    return app.response_class(
+        response=json.dumps(to_serialize),
+        status=code,
+        mimetype='application/json'
+    )
 
 
 @app.route("/diary/create", methods=['POST'])
