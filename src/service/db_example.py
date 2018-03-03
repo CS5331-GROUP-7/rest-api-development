@@ -4,6 +4,9 @@ import sys
 import datetime
 import flask
 import bson
+import uuid
+import json
+
 sys.path.insert(0, os.path.realpath(os.path.join(os.path.dirname(__file__), '../../')))
 
 from flask_mongoengine import MongoEngine
@@ -27,11 +30,27 @@ class User(db.Document):
         return 'id=%s, data = [%s:%s]'%(self.pk,self.name,self.password)
 
 class Token(db.Document):
-    expiry = db.DateTimeField(default=datetime.datetime.now)
+    token = db.StringField()
+    expiry = db.DateTimeField(default=datetime.datetime.now()+datetime.timedelta(days=1))
+    isexpired = db.BooleanField()
+    data = db.StringField()
+    def __repr__(self):
+        return 'token=%s, data = [%s]'%(self.token,self.data)
+
+class Counter(db.Document):
+    count = db.IntField()
+    def __repr__(self):
+        return 'counter = %d'%(self.count)
+
 
 
 # insert
 def test_insert():
+    count = Counter(count=0)
+    count.save()
+    dtnow = datetime.datetime.now()
+    print dtnow.isoformat()
+
     user = User(name='TestUser',password='asdf')
     user.save()
 
@@ -40,6 +59,23 @@ def test_insert():
 
     user = User(name='TestUser3',password='asdf')
     user.save()
+
+    data = {'pk':str(user.pk),'ip':'127.0.0.1'}
+    token = Token(token=str(uuid.uuid4()),data =  json.dumps(data))
+    token.save()
+
+    data2 = {'pk':str(user.pk),'ip':'127.0.0.1'}
+    token = Token(token=str(uuid.uuid4()),data =  json.dumps(data2))
+    token.save()
+
+    data3 = {'pk':str(user.pk),'ip':'127.0.0.1'}
+    token = Token(token=str(uuid.uuid4()),data =  json.dumps(data3))
+    token.save()
+
+    count = Counter.objects()[0]
+    count1 = count.count + 1
+    count.update(count=count1)
+
 
 
 def test_update():
@@ -59,10 +95,13 @@ def test_searchby_pk():
 User.drop_collection()#clear all User collection
 test_insert()
 print User.objects()
-test_update()
-print User.objects()
-test_delete()
-print User.objects()
-test_searchby_pk()
-
+results = Token.objects()
+for result in results:
+    print result.token
+print Counter.objects()
+#test_update()
+#print User.objects()
+#test_delete()
+#print User.objects()
+#test_searchby_pk()
 

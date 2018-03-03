@@ -25,6 +25,7 @@ app.debug = True
 db = MongoEngine()
 db.init_app(app)
 SALT =  'IfHYBwi5ZUFZD9VaonnK'
+
 '''
 todo:move this to separte file
 '''
@@ -36,6 +37,7 @@ class User(db.Document):
     fullname= db.StringField()
     age= db.IntField()
     registered_date = db.DateTimeField(default=datetime.datetime.now)
+    userid = db.StringField()
 
 
     def __str__(self):
@@ -54,6 +56,23 @@ class Token(db.Document):
     def __repr__(self):
         return '%s'%(self.expiry)
 
+class Diary(db.Document):
+    id = db.IntField(primary_key=True)
+    title = db.StringField()
+    username = db.StringField()
+    published_time = db.StringField()#ISO8601
+    public = db.BooleanField()
+    text = db.StringField()
+
+    def __repr__(self):
+        return '%s %s'%(self.username,self.title)
+
+class Counter(db.Document):
+    count = db.IntField()
+    def __repr__(self):
+        return 'counter = %d'%(self.count)
+
+
 def is_token_valid(token_str):
     token = Token.objects(token=token_str).first()
     if token is None:return False
@@ -70,6 +89,10 @@ CORS(app)
 
 # Remember to update this list
 ENDPOINT_LIST = ['/', '/meta/heartbeat', '/meta/members']
+# Init the counter
+count = Counter(count=0)
+count.save()
+
 
 def make_json_response(data, status=True, code=200):
     """Utility function to create the JSON responses."""
@@ -122,6 +145,9 @@ def users_register():
         # note our 'salt' is actually salt+username for extra safety
         hashed_password = hashlib.sha512(password + SALT+username).hexdigest()
         User(username = username,hashed_password=hashed_password,fullname=fullname,age=age).save()
+        user = User.objects(username=username).first()
+        userid = str(user.pk)
+        user.update(userid=userid)
         code = 201
 
 
@@ -142,7 +168,7 @@ def users_authenticate():
 
     hashed_password = hashlib.sha512(password + SALT+username).hexdigest()
     token = None
-    user = User.objects(hashed_password=hashed_password).first()
+    user = User.objects(hashed_password=hashed_password).first()##????
     if  user is not None:
         data = {'pk':str(user.pk),'ip':request.remote_addr}
         token = Token(token=str(uuid.uuid4()),data =  json.dumps(data))
@@ -164,6 +190,190 @@ def users_authenticate():
     )
     return response
 
+@app.route("/users/expire",methods=['POST'])
+def users_expire():
+    to_serialize={'status':False}
+    token_str = request.form.get('token')
+    if is_token_valid(token_str) == False:
+        code = 201
+        to_serialize['status'] = False
+    else:
+        code = 200
+        token = Token.objects(token=token_str).first()
+        token.delete()
+        to_serialize['status'] = True
+
+    #todo make the json_response() better
+    response = app.response_class(
+        response=json.dumps(to_serialize),
+        status=code,
+        mimetype='application/json'
+    )
+    return response
+
+@app.route("/users",methods=['POST'])
+def users():
+    to_serialize={'status':False}
+    token_str = request.form.get('token')
+    if is_token_valid(token_str) == False:
+        code = 201
+        to_serialize['status'] = False
+        to_serialize['error'] = 'Invalid authentication token.'
+    else:
+        code = 200
+        token = Token.objects(token=token_str).first()
+        data = json.loads(token.data)
+        pk = data['pk']
+        user = User.objects(userid=pk).first()
+        result = {'username':user.username,'fullname':user.fullname,'age':user.age}
+        to_serialize['status'] = True
+        to_serialize['result'] = json.dumps(result)
+
+    #todo make the json_response() better
+    response = app.response_class(
+        response=json.dumps(to_serialize),
+        status=code,
+        mimetype='application/json'
+    )
+    return response
+
+@app.route("/diary",methods=['POST'])
+def diary_post():
+    to_serialize={'status':False}
+    token_str = request.form.get('token')
+    if is_token_valid(token_str) == False:
+        code = 201
+        to_serialize['status'] = False
+        to_serialize['error'] = 'Invalid authentication token.'
+    else:
+        code = 200
+        token = Token.objects(token=token_str).first()
+        data = json.loads(token.data)
+        pk = data['pk']
+        user = User.objects(userid=pk).first()
+        username = user.username
+        results = Diary.objects(username=username)
+        result=[]
+        if results[0] is not None:
+            result=[]
+            for oneresult in results:
+                diary = {'id':oneresult.id,'title':oneresult.title,'author':oneresult.username,'publish_date':oneresult.published_time,'public':oneresult.public,'text':oneresult.text}
+                result.append(json.dumps(diary))
+            to_serialize['status'] = True
+            to_serialize['result'] = result            
+
+    #todo make the json_response() better
+    response = app.response_class(
+        response=json.dumps(to_serialize),
+        status=code,
+        mimetype='application/json'
+    )
+    return response
+
+
+@app.route("/diary/create",methods=['POST'])
+def diary_creation():
+    
+    to_serialize={'status':False}
+    token_str = request.form.get('token')
+    if is_token_valid(token_str) == False:
+    	code = 201
+    	to_serialize['status'] = False
+    	to_serialize['error'] = 'Invalid authentication token.'
+    else:
+    	code = 200
+        token = Token.objects(token=token_str).first()
+        data = json.loads(token.data)
+        pk = data['pk']
+        user = User.objects(userid=pk).first()
+        username = user.username 
+        title = request.form.get('title')
+    	text = request.form.get('text')
+    	public = request.form.get('public') 
+    	count = Counter.objects()[0]
+        count1 = count.count + 1
+        id = count1
+        count.update(count=count1)
+        dtnow = datetime.datetime.now()
+        published_time = dtnow.isoformat()
+
+    	Diary(id=id,title=title,username= username,published_time=published_time,public=public,text=text).save()
+    	to_serialize['status'] = True
+    	to_serialize['id'] = id
+
+    #todo make the json_response() better
+    response = app.response_class(
+        response=json.dumps(to_serialize),
+        status=code,
+        mimetype='application/json'
+
+    )
+    return response
+
+@app.route("/diary/delete",methods=['POST'])
+def diary_delete():
+    
+    to_serialize={'status':False}
+    token_str = request.form.get('token')
+    if is_token_valid(token_str) == False:
+        code = 201
+        to_serialize['status'] = False
+        to_serialize['error'] = 'Invalid authentication token.'
+    else:
+        code = 200
+        token = Token.objects(token=token_str).first()
+        data = json.loads(token.data)
+        pk = data['pk']
+        user = User.objects(userid=pk).first()
+        username = user.username 
+        id = request.form.get('id')
+        diary = Diary.objects(id=id).first()
+        DiaryOwner = diary.username
+        if DiaryOwner == username:
+            diary.delete()
+            to_serialize['status'] = True
+
+    #todo make the json_response() better
+    response = app.response_class(
+        response=json.dumps(to_serialize),
+        status=code,
+        mimetype='application/json'
+    )
+    return response
+
+@app.route("/diary/permission",methods=['POST'])
+def diary_permission():
+    
+    to_serialize={'status':False}
+    token_str = request.form.get('token')
+    if is_token_valid(token_str) == False:
+        code = 201
+        to_serialize['status'] = False
+        to_serialize['error'] = 'Invalid authentication token.'
+    else:
+        code = 200
+        token = Token.objects(token=token_str).first()
+        data = json.loads(token.data)
+        pk = data['pk']
+        user = User.objects(userid=pk).first()
+        username = user.username 
+        id = request.form.get('id')
+        public = request.form.get('public')
+        diary = Diary.objects(id=id).first()
+        DiaryOwner = diary.username
+        if DiaryOwner == username:
+            diary.update(public=public)
+            to_serialize['status'] = True
+
+    #todo make the json_response() better
+    response = app.response_class(
+        response=json.dumps(to_serialize),
+        status=code,
+        mimetype='application/json'
+    )
+    return response
+
+
 @app.route("/meta/heartbeat")
 def meta_heartbeat():
     """Returns true"""
@@ -177,6 +387,27 @@ def meta_members():
         team_members = f.read().strip().split("\n")
     return make_json_response(team_members)
 
+@app.route("/diary")
+def diary():
+    to_serialize={'status':False}
+    code = 200
+    results = Diary.objects(public=True)
+    result=[]
+    for oneresult in results:
+        diary1 = {'id':oneresult.id,'title':oneresult.title,'author':oneresult.username,'publish_date':oneresult.published_time,'public':oneresult.public,'text':oneresult.text}
+        result.append(json.dumps(diary1))
+    to_serialize['status'] = True
+    to_serialize['result'] = result
+        
+
+    #todo make the json_response() better
+    response = app.response_class(
+        response=json.dumps(to_serialize),
+        status=code,
+        mimetype='application/json'
+    )
+    return response
+
 
 if __name__ == '__main__':
     # Change the working directory to the script directory
@@ -186,3 +417,4 @@ if __name__ == '__main__':
 
     # Run the application
     app.run(debug=False, port=8080, host="0.0.0.0")
+
