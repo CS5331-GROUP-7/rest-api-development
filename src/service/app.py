@@ -208,19 +208,21 @@ def users_authenticate():
     username = request.form.get('username')
     password = request.form.get('password')
 
-    hashed_password = hashlib.sha512(password + SALT + username).hexdigest()
     token = None
-    user = User.objects(hashed_password=hashed_password).first()  ##????
-    if user is not None:
-        data = {'pk': str(user.pk), 'ip': request.remote_addr}
-        token = Token(token=str(uuid.uuid4()), data=json.dumps(data))
-        token.save()
 
     to_serialize = {'status': False}
     code = 200
     if username is None or password is None:
         to_serialize['error'] = 'Required parameter is missing'
-    elif token is not None:
+    else:
+        hashed_password = hashlib.sha512(password + SALT + username).hexdigest()
+        user = User.objects(hashed_password=hashed_password).first()  ##????
+        if user is not None:
+            data = {'pk': str(user.pk), 'ip': request.remote_addr}
+            token = Token(token=str(uuid.uuid4()), data=json.dumps(data))
+            token.save()
+
+    if token is not None:
         to_serialize['status'] = True
         to_serialize['token'] = token.token
     # todo make the json_response() better
@@ -228,7 +230,6 @@ def users_authenticate():
         response=json.dumps(to_serialize),
         status=code,
         mimetype='application/json'
-
     )
     return response
 
