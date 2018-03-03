@@ -22,29 +22,34 @@ function ajax_post(url, data, callback) {
 
     xmlhttp.open("POST", url, true); 
     xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-    xmlhttp.send("username="+data.username+"&fullname="+data.fullname+"&password="+data.password+"&age="+data.age);
+    xmlhttp.send("title="+data.title+"&text="+data.text+"&public="+data.public+"&token="+data.token);
 }
 
-function registerSubmit() {
-    var fullname = document.forms["registerForm"]["fullname"].value;
-    var age = document.forms["registerForm"]["age"].value;
-    var username = document.forms["registerForm"]["username"].value;
-    var password = document.forms["registerForm"]["password"].value;
+function createDiary() {
+    var title = document.forms["diaryForm"]["title"].value;
+    var text = document.forms["diaryForm"]["text"].value;
+    var public = document.forms["diaryForm"]["public"].value;
+    var token = localStorage.getItem("token");
+
+    console.log(public);
     var data = {
-        'fullname': fullname,
-        'age': age,
-        'username': username,
-        'password': password
+        'title': title,
+        'text': text,
+        'token': token,
+        'public': (public === "true")? true: false
     }
 
-    ajax_post(API_ENDPOINT + '/users/register', data, function(data) {
-        if (data.status) {
-            document.getElementById("response_status").innerHTML = "Register User succeeded";
-        }
-        else {
-            document.getElementById("response_status").innerHTML = "Register User failed";
-        }
+    ajax_post(API_ENDPOINT + '/diary/create', data, function(data) {
+    if (data.status) {
+            console.log('success');
+            document.getElementById("response_status").innerHTML = "Users success" + data;
+    }
+    else {
+        document.getElementById("response_status").innerHTML = "Users failed";
+    }
+    console.log(data);
     });
     return false;
 }
+
 

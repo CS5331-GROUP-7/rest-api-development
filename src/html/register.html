@@ -1,19 +1,21 @@
+<!DOCTYPE html>
 <html>
     <head>
+        <title>Register</title>
     </head>
     <body>
         <h1>Register</h1>
-       
-        <form name="registerForm" onsubmit="return registerLogin()">
+        <form name="registerForm" onsubmit="return registerSubmit()">
             Full name: <input type="text" name="fullname" required/><br>
             Age: <input type="number" name="age" required><br>
             Username: <input type="text" name="username" required/><br>
             Password: <input type="password" name="password" required><br>
             <input type="submit" value="Submit">
         </form>
-        <div id="demo_users">
+        <div id="response_status">
         </div>
-        
+        <div id="demo_dbg">
+        </div>
         <script src="./register.js"></script>
     </body>
 </html>

@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Create Diary</title>
+    </head>
+    <body>
+        <h1>Create Diary</h1>
+       
+        <form name="diaryForm" onsubmit="return createDiary()">
+            title: <input type="text" name="title" required/><br>
+            text: <textarea name="text" required></textarea><br>
+            Public: <input type="radio" name="public" value="false" checked>False
+            <input type="radio" name="public" value="true">True<br>
+            <input type="submit" value="Submit">
+        </form>
+        <div id="response_status">
+        </div>
+        <div id="demo_dbg">
+        </div>
+        <script src="./create-diary.js"></script>
+    </body>
+</html>

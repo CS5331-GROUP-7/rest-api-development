@@ -1,5 +1,6 @@
 var API_ENDPOINT = "http://localhost:8080"
 
+
 function ajax_post(url, data, callback) {
     var xmlhttp = new XMLHttpRequest();
     xmlhttp.onreadystatechange = function() {
@@ -22,27 +23,24 @@ function ajax_post(url, data, callback) {
 
     xmlhttp.open("POST", url, true); 
     xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-    xmlhttp.send("username="+data.username+"&fullname="+data.fullname+"&password="+data.password+"&age="+data.age);
+    xmlhttp.send("username="+data.username+"&password="+data.password);
 }
 
-function registerSubmit() {
-    var fullname = document.forms["registerForm"]["fullname"].value;
-    var age = document.forms["registerForm"]["age"].value;
-    var username = document.forms["registerForm"]["username"].value;
-    var password = document.forms["registerForm"]["password"].value;
+function submitLogin() {
+    var username = document.forms["loginForm"]["username"].value;
+    var password = document.forms["loginForm"]["password"].value;
     var data = {
-        'fullname': fullname,
-        'age': age,
         'username': username,
         'password': password
     }
 
-    ajax_post(API_ENDPOINT + '/users/register', data, function(data) {
+    ajax_post(API_ENDPOINT + '/users/authenticate', data, function(data) {
         if (data.status) {
-            document.getElementById("response_status").innerHTML = "Register User succeeded";
+            localStorage.setItem("token", data.token);
+            document.getElementById("response_status").innerHTML = "Login User succeeded!";
         }
         else {
-            document.getElementById("response_status").innerHTML = "Register User failed";
+            document.getElementById("response_status").innerHTML = "Login User failed";
         }
     });
     return false;

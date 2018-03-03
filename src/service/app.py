@@ -355,7 +355,7 @@ def diary_creation():
 @app.route("/diary/delete", methods=['POST'])
 def diary_delete():
     to_serialize = {'status': False}
-    token_str = request.form.get('token')
+    token_str = request.get_json()['token']
     if is_token_valid(token_str) == False:
         code = 201
         to_serialize['status'] = False
@@ -367,7 +367,7 @@ def diary_delete():
         pk = data['pk']
         user = User.objects(userid=pk).first()
         username = user.username
-        id = request.form.get('id')
+        id = request.get_json()['id']
         diary = Diary.objects(id=id).first()
         DiaryOwner = diary.username
         if DiaryOwner == username:
@@ -386,7 +386,7 @@ def diary_delete():
 @app.route("/diary/permission", methods=['POST'])
 def diary_permission():
     to_serialize = {'status': False}
-    token_str = request.form.get('token')
+    token_str = request.get_json()['token']
     if is_token_valid(token_str) == False:
         code = 201
         to_serialize['status'] = False
@@ -398,8 +398,8 @@ def diary_permission():
         pk = data['pk']
         user = User.objects(userid=pk).first()
         username = user.username
-        id = request.form.get('id')
-        public = request.form.get('public')
+        id = request.get_json()['id']
+        public = request.get_json()['public']
         diary = Diary.objects(id=id).first()
         DiaryOwner = diary.username
         if DiaryOwner == username:
