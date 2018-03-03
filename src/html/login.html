@@ -1,0 +1,26 @@
+<html>
+    <head>
+    </head>
+    <body>
+        <h1>Login</h1>
+       
+        <form name="loginForm" onsubmit="return submitLogin()">
+            Username: <input type="text" name="username" required/>
+            Password: <input type="password" name="password" required>
+            <input type="submit" value="Submit">
+        </form>
+        <div id="demo_users">
+        </div>
+        
+        <script type="text/javascript">
+            function submitLogin() {
+                var username = document.forms["loginForm"]["username"].value;
+                var password = document.forms["loginForm"]["password"].value;
+                console.log(username, password);
+                return false;
+
+            }
+        </script>
+        <script src="./users.js"></script>
+    </body>
+</html>
