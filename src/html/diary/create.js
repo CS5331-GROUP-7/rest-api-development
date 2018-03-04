@@ -21,8 +21,8 @@ function ajax_post(url, data, callback) {
     };
 
     xmlhttp.open("POST", url, true); 
-    xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-    xmlhttp.send("title="+data.title+"&text="+data.text+"&public="+data.public+"&token="+data.token);
+    xmlhttp.setRequestHeader("Content-type", "application/json");
+    xmlhttp.send(JSON.stringify(data));
 }
 
 function createDiary() {
@@ -31,7 +31,6 @@ function createDiary() {
     var public = document.forms["diaryForm"]["public"].value;
     var token = localStorage.getItem("token");
 
-    console.log(public);
     var data = {
         'title': title,
         'text': text,
@@ -40,14 +39,12 @@ function createDiary() {
     }
 
     ajax_post(API_ENDPOINT + '/diary/create', data, function(data) {
-    if (data.status) {
-            console.log('success');
-            document.getElementById("response_status").innerHTML = "Users success" + data;
-    }
-    else {
-        document.getElementById("response_status").innerHTML = "Users failed";
-    }
-    console.log(data);
+        if (data.status) {
+            document.getElementById("response_status").innerHTML = "Create diary success";
+        }
+        else {
+            document.getElementById("response_status").innerHTML = "Create diary failed";
+        }
     });
     return false;
 }

@@ -21,8 +21,8 @@ function ajax_post(url, data, callback) {
     };
 
     xmlhttp.open("POST", url, true); 
-    xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-    xmlhttp.send("username="+data.username+"&fullname="+data.fullname+"&password="+data.password+"&age="+data.age);
+    xmlhttp.setRequestHeader("Content-type", "application/json");
+    xmlhttp.send(JSON.stringify(data));
 }
 
 function registerSubmit() {
