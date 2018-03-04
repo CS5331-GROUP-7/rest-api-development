@@ -3,6 +3,7 @@ import json
 from flask import url_for
 from src.service.app import User
 
+
 @pytest.mark.usefixtures('client_class')
 class TestUsersEmpty(object):
     def test_users_no_token(self):
