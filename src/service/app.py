@@ -136,14 +136,15 @@ def meta_heartbeat():
 
 @app.route("/meta/members")
 def meta_members():
-    team_members = ['Zawlin', 'Xue Si', 'ShiQing', 'ChenHui']
+    team_members = ['Zawlin', 'Xue Si', 'Shi Qing', 'Chen Hui']
     return make_json_response(team_members)
 
 
 @app.route("/users", methods=['POST'])
 def users():
     to_serialize = {'status': False}
-    token_str = request.form.get('token')
+    payload = request.get_json()
+    token_str = payload['token']
     code = 200
     if is_token_valid(token_str) == False:
         to_serialize['status'] = False
@@ -172,11 +173,12 @@ def users_register():
     #
     # print request.args # for get
     # print request.form # for post
+    payload = request.get_json()
     username, fullname, age, password = None, None, None, None
-    username = request.form.get('username')
-    password = request.form.get('password')
-    fullname = request.form.get('fullname')
-    age = request.form.get('age')
+    username = payload['username']
+    password = payload['password']
+    fullname = payload['fullname']
+    age = payload['age']
     to_serialize = {'status': False}
     code = 200
     if username is None or fullname is None or age is None or password is None:
@@ -205,8 +207,9 @@ def users_register():
 
 @app.route("/users/authenticate", methods=['POST'])
 def users_authenticate():
-    username = request.form.get('username')
-    password = request.form.get('password')
+    payload = request.get_json()
+    username = payload['username']
+    password = payload['password']
 
     hashed_password = hashlib.sha512(password + SALT + username).hexdigest()
     token = None
@@ -222,7 +225,7 @@ def users_authenticate():
         to_serialize['error'] = 'Required parameter is missing'
     elif token is not None:
         to_serialize['status'] = True
-        to_serialize['token'] = token.token
+        to_serialize['result'] = {'token': token.token}
     # todo make the json_response() better
     response = app.response_class(
         response=json.dumps(to_serialize),
@@ -235,8 +238,9 @@ def users_authenticate():
 
 @app.route("/users/expire", methods=['POST'])
 def users_expire():
+    payload = request.get_json()
     to_serialize = {'status': False}
-    token_str = request.form.get('token')
+    token_str = payload['token']
     code = 200
     if is_token_valid(token_str) == False:
         to_serialize['status'] = False
@@ -279,7 +283,8 @@ def diary():
 @app.route("/diary", methods=['POST'])
 def diary_post():
     to_serialize = {'status': False}
-    token_str = request.form.get('token')
+    payload = request.get_json()
+    token_str = payload['token']
     code = 200
     if is_token_valid(token_str) == False:
         to_serialize['status'] = False
@@ -313,7 +318,8 @@ def diary_post():
 @app.route("/diary/create", methods=['POST'])
 def diary_creation():
     to_serialize = {'status': False}
-    token_str = request.form.get('token')
+    payload = request.get_json()
+    token_str = payload['token']
     code = 200
     if is_token_valid(token_str) == False:
         to_serialize['status'] = False
@@ -324,9 +330,10 @@ def diary_creation():
         pk = data['pk']
         user = User.objects(userid=pk).first()
         username = user.username
-        title = request.form.get('title')
-        text = request.form.get('text')
-        public = request.form.get('public')
+        payload2 = request.get_json()
+        title = payload2['title']
+        text = payload2['text']
+        public = payload2['public']
         count = Counter.objects()[0]
         count1 = count.count + 1
         id = count1
@@ -336,7 +343,7 @@ def diary_creation():
 
         Diary(id=id, title=title, username=username, published_time=published_time, public=public, text=text).save()
         to_serialize['status'] = True
-        to_serialize['id'] = id
+        to_serialize['result'] = {'id':id}
 
     # todo make the json_response() better
     response = app.response_class(
@@ -392,8 +399,9 @@ def diary_permission():
         pk = data['pk']
         user = User.objects(userid=pk).first()
         username = user.username
-        id = request.get_json()['id']
-        public = request.get_json()['public']
+        payload2 = request.get_json()
+        public = payload2['public']
+        id = payload2['id']
         diary = Diary.objects(id=id).first()
         DiaryOwner = diary.username
         if DiaryOwner == username:

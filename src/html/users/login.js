@@ -22,8 +22,8 @@ function ajax_post(url, data, callback) {
     };
 
     xmlhttp.open("POST", url, true); 
-    xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-    xmlhttp.send("username="+data.username+"&password="+data.password);
+    xmlhttp.setRequestHeader("Content-type", "application/json");
+    xmlhttp.send(JSON.stringify(data));
 }
 
 function submitLogin() {
@@ -36,7 +36,7 @@ function submitLogin() {
 
     ajax_post(API_ENDPOINT + '/users/authenticate', data, function(data) {
         if (data.status) {
-            localStorage.setItem("token", data.token);
+            localStorage.setItem("token", data.result.token);
             document.getElementById("response_status").innerHTML = "Login User succeeded!";
         }
         else {
