@@ -1,11 +1,14 @@
 import pytest
 import json
 from flask import url_for
-
+from src.service.app import User, Token, SALT, Diary, Counter
 
 @pytest.mark.usefixtures('client_class')
 class TestDiaryEmpty(object):
     def test_diary_get_empty(self):
+        diary = Diary.objects(id=999).first()
+        if diary:
+            diary.delete()
         response = self.client.get(url_for('diary'))
         assert response.status_code == 200
 

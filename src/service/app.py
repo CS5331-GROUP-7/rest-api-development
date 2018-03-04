@@ -144,7 +144,10 @@ def meta_members():
 def users():
     to_serialize = {'status': False}
     payload = request.get_json()
-    token_str = payload['token']
+    if payload:
+        token_str = payload['token']
+    else:
+        token_str = payload
     code = 200
     if is_token_valid(token_str) == False:
         to_serialize['status'] = False
@@ -173,12 +176,13 @@ def users_register():
     #
     # print request.args # for get
     # print request.form # for post
-    payload = request.get_json()
     username, fullname, age, password = None, None, None, None
-    username = payload['username']
-    password = payload['password']
-    fullname = payload['fullname']
-    age = payload['age']
+    payload = request.get_json()
+    if payload:
+        username = payload['username']
+        password = payload['password']
+        fullname = payload['fullname']
+        age = payload['age']
     to_serialize = {'status': False}
     code = 200
     if username is None or fullname is None or age is None or password is None:
@@ -208,8 +212,12 @@ def users_register():
 @app.route("/users/authenticate", methods=['POST'])
 def users_authenticate():
     payload = request.get_json()
-    username = payload['username']
-    password = payload['password']
+    if payload:
+        username = payload['username']
+        password = payload['password']
+    else:
+        username = None
+        password = None
 
     token = None
 
@@ -240,8 +248,11 @@ def users_authenticate():
 @app.route("/users/expire", methods=['POST'])
 def users_expire():
     payload = request.get_json()
+    if payload:
+        token_str = payload['token']
+    else:
+        token_str = payload
     to_serialize = {'status': False}
-    token_str = payload['token']
     code = 200
     if is_token_valid(token_str) == False:
         to_serialize['status'] = False
@@ -285,7 +296,10 @@ def diary():
 def diary_post():
     to_serialize = {'status': False}
     payload = request.get_json()
-    token_str = payload['token']
+    if payload:
+        token_str = payload['token']
+    else:
+        token_str = payload
     code = 200
     if is_token_valid(token_str) == False:
         to_serialize['status'] = False
@@ -319,7 +333,10 @@ def diary_post():
 def diary_creation():
     to_serialize = {'status': False}
     payload = request.get_json()
-    token_str = payload['token']
+    if payload:
+        token_str = payload['token']
+    else:
+        token_str = payload
     code = 200
     if is_token_valid(token_str) == False:
         to_serialize['status'] = False
@@ -358,7 +375,11 @@ def diary_creation():
 @app.route("/diary/delete", methods=['POST'])
 def diary_delete():
     to_serialize = {'status': False}
-    token_str = request.get_json()['token']
+    payload = request.get_json()
+    if payload:
+        token_str = payload['token']
+    else:
+        token_str = payload
     code = 200
     if is_token_valid(token_str) == False:
         to_serialize['status'] = False
@@ -388,7 +409,11 @@ def diary_delete():
 @app.route("/diary/permission", methods=['POST'])
 def diary_permission():
     to_serialize = {'status': False}
-    token_str = request.get_json()['token']
+    payload = request.get_json()
+    if payload:
+        token_str = payload['token']
+    else:
+        token_str = payload
     code = 200
     if is_token_valid(token_str) == False:
         to_serialize['status'] = False

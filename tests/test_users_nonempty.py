@@ -77,10 +77,11 @@ class TestUsersNonEmpty(object):
 
         data = json.loads(response.data)
         assert 'status' in data
-        assert 'token' in data
+        assert 'result' in data
+        assert 'token' in data['result']
 
         assert data['status']
-        token_str = data['token']
+        token_str = data['result']['token']
         assert is_token_valid(token_str)
 
         token = Token.objects(token=token_str).first()

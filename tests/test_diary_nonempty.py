@@ -153,11 +153,12 @@ class TestDiaryNonEmpty(object):
         assert response.status_code == 200
 
         data = json.loads(response.data)
-        assert 'id' in data
+        assert 'result' in data
         assert 'status' in data
+        assert 'id' in data['result']
 
         assert data['status']
-        assert data['id'] == 1
+        assert data['result']['id'] == 1
 
         count = Counter.objects()[0]
         count.update(count=0)

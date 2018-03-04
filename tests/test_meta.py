@@ -21,7 +21,7 @@ def test_meta_members(client):
     assert 'result' in data
 
     assert data['status']
-    assert data['result'] == ['Zawlin', 'Xue Si', 'ShiQing', 'ChenHui']
+    assert data['result'] == ['Zawlin', 'Xue Si', 'Shi Qing', 'Chen Hui']
 
 
 if __name__ == '__main__':
