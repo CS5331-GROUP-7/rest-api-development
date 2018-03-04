@@ -1,7 +1,6 @@
 import pytest
 import json
 from flask import url_for
-from src.service.app import User
 
 
 @pytest.mark.usefixtures('client_class')
@@ -105,6 +104,6 @@ class TestDiaryEmpty(object):
         assert not data['status']
         assert 'Invalid authentication token' in data['error']
 
-        
+
 if __name__ == '__main__':
     pytest.main()

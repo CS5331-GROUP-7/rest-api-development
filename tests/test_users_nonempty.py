@@ -46,7 +46,7 @@ class TestUsersNonEmpty(object):
     def test_users_valid_token(self):
         response = self.client.post(url_for('users'),
                                     data=dict(token=token1uuid),
-                                    environ_base={'REMOTE_ADDR': '127.0.0.1'})
+                                    environ_base={'REMOTE_ADDR': localhost})
         assert response.status_code == 200
 
         data = json.loads(response.data)

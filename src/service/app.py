@@ -293,16 +293,15 @@ def diary_post():
         username = user.username
         results = Diary.objects(username=username)
         result = []
-        if results[0] is not None:
-            result = []
+        if results is not None:
             for oneresult in results:
                 diary = {'id': oneresult.id, 'title': oneresult.title, 'author': oneresult.username,
                          'publish_date': oneresult.published_time, 'public': oneresult.public, 'text': oneresult.text}
                 result.append(json.dumps(diary))
-            to_serialize['status'] = True
-            to_serialize['result'] = result
+        to_serialize['status'] = True
+        to_serialize['result'] = result
 
-            # todo make the json_response() better
+    # todo make the json_response() better
     response = app.response_class(
         response=json.dumps(to_serialize),
         status=code,
@@ -394,7 +393,7 @@ def diary_permission():
         user = User.objects(userid=pk).first()
         username = user.username
         id = request.get_json()['id']
-        public = request.get_json()['public']
+        public = request.get_json()['public'] == 'True'
         diary = Diary.objects(id=id).first()
         DiaryOwner = diary.username
         if DiaryOwner == username:
