@@ -55,10 +55,8 @@ def meta_members():
 def users():
     to_serialize = {'status': False}
     payload = request.get_json()
-    if payload:
+    if payload and 'token' in payload:
         token_str = payload['token']
-    else:
-        token_str = payload
     code = 200
     if not is_token_valid(token_str):
         to_serialize['status'] = False
@@ -91,7 +89,11 @@ def users_register():
     username, fullname, age, password = None, None, None, None
     payload = request.get_json()
     current_app.logger.info(payload)
-    if payload:
+    if payload and \
+            'password' in payload and \
+            'username' in payload and \
+            'fullname' in payload and \
+            'age' in payload:
         username = payload['username']
         password = payload['password']
         fullname = payload['fullname']
@@ -123,12 +125,14 @@ def users_register():
 def users_authenticate():
     SALT = current_app.config.get('SALT')
     payload = request.get_json()
+    username = None
+    password = None
+
     if payload:
-        username = payload['username']
-        password = payload['password']
-    else:
-        username = None
-        password = None
+        if 'username' in payload:
+            username = payload['username']
+        if 'password' in payload:
+            password = payload['password']
 
     token = None
 
@@ -159,10 +163,8 @@ def users_authenticate():
 @views.route("/users/expire", methods=['POST'])
 def users_expire():
     payload = request.get_json()
-    if payload:
+    if payload and 'token' in payload:
         token_str = payload['token']
-    else:
-        token_str = payload
     to_serialize = {'status': False}
     code = 200
     if not is_token_valid(token_str):

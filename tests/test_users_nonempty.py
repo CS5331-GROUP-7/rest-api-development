@@ -30,7 +30,6 @@ class TestUsersNonEmpty(object):
         token = Token(token=expired_token, data=json.dumps(data), isexpired=True)
         token.save()
 
-
     @classmethod
     def teardown_class(cls):
         user = User.objects(username=user1).first()
@@ -45,9 +44,9 @@ class TestUsersNonEmpty(object):
             token.delete()
 
     def test_users_valid_token(self):
-        response = send_post_data(self.client,url_for('views.users'),
-                                    data=dict(token=token1uuid),
-                                    environ_base={'REMOTE_ADDR': localhost})
+        response = send_post_data(self.client,
+                                  url_for('views.users'),
+                                  dict(token=token1uuid))
         assert response.status_code == 200
 
         data = json.loads(response.data)
@@ -61,8 +60,9 @@ class TestUsersNonEmpty(object):
         assert user_data['age'] == int(user1age)
 
     def test_users_register_username_exist(self):
-        response = send_post_data(self.client,url_for('views.users_register'),
-                                    data=dict(username=user1, password="2", fullname="3", age="4"))
+        response = send_post_data(self.client,
+                                  url_for('views.users_register'),
+                                  dict(username=user1, password="2", fullname="3", age="4"))
         assert response.status_code == 200
 
         data = json.loads(response.data)
@@ -73,7 +73,9 @@ class TestUsersNonEmpty(object):
         assert 'Username already exists' in data['error']
 
     def test_users_authenticate_success(self):
-        response = send_post_data(self.client,url_for('views.users_authenticate'), data=dict(username=user1, password=user1pw,fullname=user1name,age=user1age))
+        response = send_post_data(self.client,
+                                  url_for('views.users_authenticate'),
+                                  dict(username=user1, password=user1pw,fullname=user1name,age=user1age))
         assert response.status_code == 200
 
         data = json.loads(response.data)
@@ -90,7 +92,9 @@ class TestUsersNonEmpty(object):
         assert not Token.objects(token=token_str).first()
 
     def test_users_expire_token_success(self):
-        response = send_post_data(self.client,url_for('views.users_expire'), data=dict(token=token1uuid))
+        response = send_post_data(self.client,
+                                  url_for('views.users_expire'),
+                                  dict(token=token1uuid))
         assert response.status_code == 200
 
         data = json.loads(response.data)
@@ -99,7 +103,9 @@ class TestUsersNonEmpty(object):
         assert data['status']
 
     def test_users_expire_expired_token(self):
-        response = send_post_data(self.client,url_for('views.users_expire'), data=dict(token=expired_token))
+        response = send_post_data(self.client,
+                                  url_for('views.users_expire'),
+                                  dict(token=expired_token))
         assert response.status_code == 200
 
         data = json.loads(response.data)
