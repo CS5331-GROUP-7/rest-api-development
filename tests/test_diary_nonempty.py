@@ -32,7 +32,8 @@ localhost = '127.0.0.1'
 
 
 def add_user(username, name, age, pw):
-    SALT = app.config.get('SALT')
+    #SALT = app.config.get('SALT')
+    SALT='IfHYBwi5ZUFZD9VaonnK'
     hash_password = hashlib.sha512(pw + SALT + username).hexdigest()
     User(username=username, hashed_password=hash_password, fullname=name, age=age).save()
     user = User.objects(username=username).first()
@@ -45,10 +46,10 @@ def add_token(token_str, data, expired=False):
 
 
 def add_diary( title, username, published_time, public, text):
-    global diary_public_id
     diary = Diary(title=title, username=username, published_time=published_time, public=public, text=text)
     diary.save()
-    diary_public_id=diary.id
+    #diary_public_id=diary.id
+    return diary.id
 
 
 def delete_user(username):
@@ -72,6 +73,7 @@ def delete_diary(diary_id):
 class TestDiaryNonEmpty(object):
     @classmethod
     def setup_class(cls):
+        global diary_public_id,diary_private_id
         user1id = add_user(user1, user1name, user1age, user1pw)
         data = {'pk': user1id, 'ip': localhost}
         add_token(token1uuid, data)
@@ -81,8 +83,8 @@ class TestDiaryNonEmpty(object):
         data = {'pk': user2id, 'ip': localhost}
         add_token(token2uuid, data)
 
-        add_diary(diary_public_id, diary_public_title, user1, diary_time, True, diary_public_text)
-        add_diary(diary_private_id, diary_private_title, user1, diary_time, False, diary_private_text)
+        diary_public_id=add_diary( diary_public_title, user1, diary_time, True, diary_public_text)
+        diary_private_id=add_diary( diary_private_title, user1, diary_time, False, diary_private_text)
 
     @classmethod
     def teardown_class(cls):
@@ -117,8 +119,7 @@ class TestDiaryNonEmpty(object):
 
     def test_diary_post_owner(self):
         response = send_post_data(self.client,url_for('views.diary'),
-                                    data=dict(token=token1uuid),
-                                    environ_base={'REMOTE_ADDR': localhost})
+                                    data=dict(token=token1uuid))
         assert response.status_code == 200
 
         data = json.loads(response.data)
@@ -138,8 +139,7 @@ class TestDiaryNonEmpty(object):
 
     def test_diary_post_not_owner(self):
         response = send_post_data(self.client,url_for('views.diary'),
-                                    data=dict(token=token2uuid),
-                                    environ_base={'REMOTE_ADDR': localhost})
+                                    data=dict(token=token2uuid))
         assert response.status_code == 200
 
         data = json.loads(response.data)
@@ -151,8 +151,7 @@ class TestDiaryNonEmpty(object):
 
     def test_diary_create(self):
         response = send_post_data(self.client,url_for('views.diary_creation'),
-                                    data=dict(token=token2uuid),
-                                    environ_base={'REMOTE_ADDR': localhost})
+                                    data=dict(token=token2uuid))
         assert response.status_code == 200
 
         data = json.loads(response.data)
@@ -169,8 +168,7 @@ class TestDiaryNonEmpty(object):
 
     def test_diary_delete_not_owner(self):
         response = send_post_data(self.client,url_for('views.diary_delete'),
-                                    data=dict(token=token2uuid, id=diary_private_id),
-                                    environ_base={'REMOTE_ADDR': localhost})
+                                    data=dict(token=token2uuid, id=diary_private_id))
         assert response.status_code == 200
 
         data = json.loads(response.data)
@@ -178,10 +176,9 @@ class TestDiaryNonEmpty(object):
         assert not data['status']
 
     def test_diary_delete_owner(self):
-        add_diary(999, "test_diary_delete", user2, diary_time, True, "user2 owner")
+        diary_id = add_diary("test_diary_delete", user2, diary_time, True, "user2 owner")
         response = send_post_data(self.client,url_for('views.diary_delete'),
-                                    data=dict(token=token2uuid, id=999),
-                                    environ_base={'REMOTE_ADDR': localhost})
+                                    data=dict(token=token2uuid, id=diary_id))
         assert response.status_code == 200
 
         data = json.loads(response.data)
@@ -193,8 +190,7 @@ class TestDiaryNonEmpty(object):
 
     def test_diary_permission_not_owner(self):
         response = send_post_data(self.client,url_for('views.diary_permission'),
-                                    data=dict(token=token2uuid, id=diary_private_id, public=True),
-                                    environ_base={'REMOTE_ADDR': localhost})
+                                    data=dict(token=token2uuid, id=diary_private_id, public=True))
         assert response.status_code == 200
 
         data = json.loads(response.data)
@@ -206,8 +202,7 @@ class TestDiaryNonEmpty(object):
 
     def test_diary_permission_owner_private_to_public(self):
         response = send_post_data(self.client,url_for('views.diary_permission'),
-                                    data=dict(token=token1uuid, id=diary_private_id, public=True),
-                                    environ_base={'REMOTE_ADDR': localhost})
+                                    data=dict(token=token1uuid, id=diary_private_id, public=True))
         assert response.status_code == 200
 
         data = json.loads(response.data)
@@ -219,8 +214,7 @@ class TestDiaryNonEmpty(object):
 
     def test_diary_permission_owner_public_to_private(self):
         response = send_post_data(self.client,url_for('views.diary_permission'),
-                                    data=dict(token=token1uuid, id=diary_public_id, public=False),
-                                    environ_base={'REMOTE_ADDR': localhost})
+                                    data=dict(token=token1uuid, id=diary_public_id, public=False))
         assert response.status_code == 200
 
         data = json.loads(response.data)

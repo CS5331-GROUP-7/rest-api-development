@@ -26,7 +26,7 @@ class TestUsersNonEmpty(object):
         # db.close()
         # SALT = app.config.get('SALT')
         # print SALT
-        SALT='dfdf'
+        SALT='IfHYBwi5ZUFZD9VaonnK'
         hash_password = hashlib.sha512(user1pw + SALT + user1).hexdigest()
         User(username=user1, hashed_password=hash_password, fullname=user1name, age=user1age).save()
         user = User.objects(username=user1).first()
