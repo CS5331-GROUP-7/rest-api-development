@@ -21,7 +21,6 @@ class TestUsersNonEmpty(object):
         User(username=user1, hashed_password=hash_password, fullname=user1name, age=user1age).save()
         user = User.objects(username=user1).first()
         userid = str(user.pk)
-        user.update(userid=userid)
 
         data = {'pk': userid, 'ip': localhost}
         token = Token(token=token1uuid, data=json.dumps(data))
@@ -72,7 +71,7 @@ class TestUsersNonEmpty(object):
         assert 'Username already exists' in data['error']
 
     def test_users_authenticate_success(self):
-        response = self.client.post(url_for('users_authenticate'), data=dict(username=user1, password=user1pw))
+        response = self.client.post(url_for('users_authenticate'), data=dict(username=user1, password=user1pw,fullname=user1name,age=user1age))
         assert response.status_code == 200
 
         data = json.loads(response.data)
@@ -93,6 +92,7 @@ class TestUsersNonEmpty(object):
         assert response.status_code == 200
 
         data = json.loads(response.data)
+        print data['status']
         assert 'status' in data
         assert data['status']
 

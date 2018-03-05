@@ -3,7 +3,7 @@ import json
 import hashlib
 import datetime
 from flask import url_for
-from src.service.app import User, Token, SALT, Diary, Counter
+from src.service.app import User, Token, SALT, Diary
 
 user1 = "user1"
 user1pw = "password1"
@@ -16,7 +16,7 @@ user2name = "user2"
 user2age = "2"
 
 diary_time = datetime.datetime.now().isoformat()
-diary_public_id = 111
+diary_public_id = None
 diary_public_title = 'Public title'
 diary_public_text = 'Public text'
 
@@ -34,9 +34,7 @@ def add_user(username, name, age, pw):
     hash_password = hashlib.sha512(pw + SALT + username).hexdigest()
     User(username=username, hashed_password=hash_password, fullname=name, age=age).save()
     user = User.objects(username=username).first()
-    userid_str = str(user.pk)
-    user.update(userid=userid_str)
-    return userid_str
+    return str(user.pk)
 
 
 def add_token(token_str, data, expired=False):
@@ -44,8 +42,11 @@ def add_token(token_str, data, expired=False):
     token.save()
 
 
-def add_diary(diary_id, title, username, published_time, public, text):
-    Diary(id=diary_id, title=title, username=username, published_time=published_time, public=public, text=text).save()
+def add_diary( title, username, published_time, public, text):
+    global diary_public_id
+    diary = Diary(title=title, username=username, published_time=published_time, public=public, text=text)
+    diary.save()
+    diary_public_id=diary.id
 
 
 def delete_user(username):

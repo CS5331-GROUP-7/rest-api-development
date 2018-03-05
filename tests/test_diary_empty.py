@@ -1,7 +1,7 @@
 import pytest
 import json
 from flask import url_for
-from src.service.app import User, Token, SALT, Diary, Counter
+from src.service.app import User, Token, SALT, Diary
 
 @pytest.mark.usefixtures('client_class')
 class TestDiaryEmpty(object):

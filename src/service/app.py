@@ -10,21 +10,36 @@ import uuid
 import flask
 from flask import request
 import hashlib
-
+#from flask import current_app as app
 sys.path.insert(0, os.path.realpath(os.path.join(os.path.dirname(__file__), '../../')))
 
 from flask_mongoengine import MongoEngine
-
-app = flask.Flask(__name__)
-app.config.from_object(__name__)
-app.config['MONGODB_SETTINGS'] = {'db': 'db_test',
-                                  'host': 'mongodb'}
-app.config['TESTING'] = True
-app.config['SECRET_KEY'] = 'flask+mongoengine=<3'
-app.debug = True
 db = MongoEngine()
-db.init_app(app)
-SALT = 'IfHYBwi5ZUFZD9VaonnK'
+def create_app(**config_overrides):
+    app = Flask(__name__, static_folder='static', static_url_path='')
+
+    # Load config.
+    #app.config.from_object('config')
+
+    # app.config['MONGODB_SETTINGS'] = {'db': 'db_deploy',
+                                      # 'host': 'mongodb'}
+
+    #app.config['SALT'] = 'IfHYBwi5ZUFZD9VaonnK'
+    # apply overrides
+    app.config.update(config_overrides)
+
+    # Setup the database.
+    db.init_app(app)
+
+    return app
+
+app=create_app(
+            MONGODB_SETTINGS={'db': 'db_deploy','host':'mongodb'},
+        TESTING=True,
+        SALT='IfHYBwi5ZUFZD9VaonnK',
+    )
+SALT=app.config.get('SALT')
+#app.logger.info('here')
 
 '''
 todo:move this to separte file
@@ -99,7 +114,7 @@ def is_token_valid(token_str):
     return True
 
 
-app = Flask(__name__)
+#app = Flask(__name__)
 # Enable cross origin sharing for all endpoints
 CORS(app)
 
@@ -182,8 +197,10 @@ def users_register():
     #
     # print request.args # for get
     # print request.form # for post
+    SALT = app.config.get('SALT')
     username, fullname, age, password = None, None, None, None
     payload = request.get_json()
+    app.logger.info(payload)
     if payload:
         username = payload['username']
         password = payload['password']
@@ -214,6 +231,8 @@ def users_register():
 
 @app.route("/users/authenticate", methods=['POST'])
 def users_authenticate():
+
+    SALT = app.config.get('SALT')
     payload = request.get_json()
     if payload:
         username = payload['username']
@@ -473,6 +492,12 @@ if __name__ == '__main__':
     abspath = os.path.abspath(__file__)
     dname = os.path.dirname(abspath)
     os.chdir(dname)
+
+    app=create_app(
+            MONGODB_SETTINGS={'db': 'db_deploy','host':'mongodb'},
+        TESTING=True,
+        SALT='IfHYBwi5ZUFZD9VaonnK',
+    )
 
     # Run the application
     app.run(debug=False, port=8080, host="0.0.0.0")

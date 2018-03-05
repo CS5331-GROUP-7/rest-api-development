@@ -2,10 +2,29 @@ import pytest
 import json
 from flask import url_for
 from src.service.app import User
+import urllib2
 
 
 @pytest.mark.usefixtures('client_class')
 class TestUsersEmpty(object):
+
+    @classmethod
+    def setup_class(self):
+
+        User.drop_collection()
+        Token.drop_collection()
+        Diary.drop_collection()
+        code = 200
+        res = urllib2.urlopen('http://app:8080/debug/resetdb')
+
+        assert 'success' in res.read()
+        assert res.code == 200
+
+
+    @classmethod
+    def teardown_class(self):
+        pass
+
     def test_users_no_token(self):
         response = self.client.post(url_for('users'))
         assert response.status_code == 200
