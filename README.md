@@ -131,8 +131,9 @@ Answer: In order to develop this app in the future, we added a debug mode which 
 
 #### Question 5: Is your web application vulnerable? If yes, how and why? If not, what measures did you take to secure it?
 
-Answer: Yes. Data (password, token, text...) is not encrypted during the transmission. Hacker can get it and attack the app.
-At the same time, there is no limitation for response times. This app is vulnerable under flooding attack.
+Answer: 
+1. Yes. Data (password, token, text...) is not encrypted during the transmission. Hacker can obtain it via man in the middle attack. We can secure it via https protocol. However,since api require us to provide http. We can implement this by proxying flask traffic through apache server.
+2. There is no limitation for response times. This app is vulnerable under flooding attack.
 
 #### Feedback: Is there any other feedback you would like to give?
 
