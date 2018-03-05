@@ -10,6 +10,9 @@ from mongoengine import connect
 @pytest.fixture(scope='session')
 def app():
 
+    # db = connect('mongodb')
+    # db.drop_database('db_test')
+    # db.close()
     app = create_app(
         MONGODB_SETTINGS={'db': 'db_test','host':'mongodb'},
         TESTING=True,

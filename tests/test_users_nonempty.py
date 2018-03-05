@@ -21,6 +21,10 @@ from mongoengine import connect
 class TestUsersNonEmpty(object):
     @classmethod
     def setup_class(cls):
+
+        db = connect('db_test',host='mongodb')
+        db.drop_database('db_test')
+        db.close()
         # db = connect('mongodb')
         # db.drop_database('db_test')
         # db.close()
