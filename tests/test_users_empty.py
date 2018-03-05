@@ -5,20 +5,22 @@ from src.service.app import User
 import urllib2
 
 
+from flask_mongoengine import MongoEngine
+from mongoengine import connect
 @pytest.mark.usefixtures('client_class')
 class TestUsersEmpty(object):
 
     @classmethod
     def setup_class(self):
 
-        User.drop_collection()
-        Token.drop_collection()
-        Diary.drop_collection()
-        code = 200
-        res = urllib2.urlopen('http://app:8080/debug/resetdb')
+        pass
+        # db = connect('mongodb')
+        # db.drop_database('db_test')
+        #code = 200
+        #res = urllib2.urlopen('http://app:8080/debug/resetdb')
 
-        assert 'success' in res.read()
-        assert res.code == 200
+        #assert 'success' in res.read()
+        #assert res.code == 200
 
 
     @classmethod
