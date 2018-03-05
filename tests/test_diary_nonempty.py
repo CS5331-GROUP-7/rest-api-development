@@ -169,7 +169,7 @@ class TestDiaryNonEmpty(object):
         assert data['status']
         assert data['result']['id'] == 3
 
-        delete_diary(data['id'])
+        delete_diary(data['result']['id'])
 
     def test_diary_create_error(self):
         response = send_post_data(self.client,url_for('views.diary_creation'),
