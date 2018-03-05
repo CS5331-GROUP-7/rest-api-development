@@ -3,7 +3,7 @@ var API_ENDPOINT = "http://localhost:8080"
 function ajax_post(url, data, callback) {
     var xmlhttp = new XMLHttpRequest();
     xmlhttp.onreadystatechange = function() {
-        if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+        if (xmlhttp.readyState == 4 && xmlhttp.status == 201) {
             console.log('responseText:' + xmlhttp.responseText);
             try {
                 var data = JSON.parse(xmlhttp.responseText);
