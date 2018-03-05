@@ -1,6 +1,6 @@
 import pytest
 from src.service.app import create_app
-
+from src.service.app import app as flask_app
 from flask_mongoengine import MongoEngine
 from mongoengine import connect
 
@@ -14,4 +14,4 @@ def app():
         TESTING=True,
         SALT='IfHYBwi5ZUFZD9VaonnK',
     )
-    return app
+    return flask_app
