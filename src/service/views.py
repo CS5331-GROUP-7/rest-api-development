@@ -4,6 +4,7 @@ import datetime
 import hashlib
 import json
 import uuid
+from bson import ObjectId
 
 views = Blueprint('views', __name__)
 
@@ -66,7 +67,7 @@ def users():
         token = Token.objects(token=token_str).first()
         data = json.loads(token.data)
         pk = data['pk']
-        user = User.objects(userid=pk).first()
+        user = User.objects(pk=ObjectID(pk)).first()
         result = {'username': user.username, 'fullname': user.fullname, 'age': user.age}
         to_serialize['status'] = True
         to_serialize['result'] = json.dumps(result)
@@ -217,7 +218,7 @@ def diary_post():
         token = Token.objects(token=token_str).first()
         data = json.loads(token.data)
         pk = data['pk']
-        user = User.objects(userid=pk).first()
+        user = User.objects(pk=ObjectId(pk)).first()
         username = user.username
         results = Diary.objects(username=username)
         result = []
@@ -254,7 +255,7 @@ def diary_creation():
         token = Token.objects(token=token_str).first()
         data = json.loads(token.data)
         pk = data['pk']
-        user = User.objects(userid=pk).first()
+        user = User.objects(pk=ObjectId(pk)).first()
         username = user.username
         payload2 = request.get_json()
         title = payload2['title']
@@ -263,7 +264,9 @@ def diary_creation():
         dtnow = datetime.datetime.now()
         published_time = dtnow.isoformat()
 
-        Diary(id=id, title=title, username=username, published_time=published_time, public=public, text=text).save()
+        diary = Diary(title=title, username=username, published_time=published_time, public=public, text=text)
+        diary.save()
+        id=diary.id
         to_serialize['status'] = True
         to_serialize['result'] = {'id': id}
 
@@ -293,7 +296,7 @@ def diary_delete():
         token = Token.objects(token=token_str).first()
         data = json.loads(token.data)
         pk = data['pk']
-        user = User.objects(userid=pk).first()
+        user = User.objects(pk=ObjectId(pk)).first()
         username = user.username
         id = request.get_json()['id']
         diary = Diary.objects(id=id).first()
@@ -327,7 +330,7 @@ def diary_permission():
         token = Token.objects(token=token_str).first()
         data = json.loads(token.data)
         pk = data['pk']
-        user = User.objects(userid=pk).first()
+        user = User.objects(pk=ObjectId(pk)).first()
         username = user.username
         payload2 = request.get_json()
         public = payload2['public']

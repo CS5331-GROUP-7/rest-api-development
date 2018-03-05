@@ -63,7 +63,7 @@ class Token(db.Document):
 
 
 class Diary(db.Document):
-    id = db.SequenceField()
+    id = db.SequenceField(primary_key=True)
     title = db.StringField()
     username = db.StringField()
     published_time = db.StringField()  # ISO8601
