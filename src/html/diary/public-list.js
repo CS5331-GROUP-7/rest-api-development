@@ -15,7 +15,6 @@ function ajax_get(url, callback) {
             }
             callback(data);
         }else{
-
             //document.getElementById("demo_dbg").innerHTML = xmlhttp.responseText;
         }
     };
@@ -31,7 +30,7 @@ ajax_get(API_ENDPOINT + '/diary', function(data) {
         for (var i = 0; i < members.length; i++) {
             var member = JSON.parse(members[i]);
             output += 
-                "<li><div>" + 
+                "<li><div class='form-group row'>" + 
                 "Title: " + member["title"] + "<br>" +
                 "Text: " + member["text"] + "<br>" +
                 "Public: " + member["public"] + "<br>" +

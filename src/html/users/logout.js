@@ -27,11 +27,10 @@ function ajax_post(url, data, callback) {
 ajax_post(API_ENDPOINT + '/users', {'token': localStorage.getItem("token")}, function(data) {
     if (data.status) {
         var member = JSON.parse(data.result);
-        var output = "<p>User account</p><br>";
-        output += "<div>" + 
-                "Full name: " + member["fullname"] + "<br>" +
-                "Username: " + member["username"] + "<br>" +
-                "Age: " + member["age"] + "<br>" +
+        var output = "<div class='form-group'>" + 
+                "<div class='row'>Full name: " + member["fullname"] + "</div>" +
+                "<div class='row'>Username: " + member["username"] + "</div>" +
+                "<div class='row'>Age: " + member["age"] + "</div>" +
                 "<div>";
     
         document.getElementById("user-account").innerHTML = output;
