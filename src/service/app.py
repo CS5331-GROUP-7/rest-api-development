@@ -150,7 +150,10 @@ def meta_members():
 def users():
     to_serialize = {'status': False}
     payload = request.get_json()
-    token_str = payload['token']
+    if payload:
+        token_str = payload['token']
+    else:
+        token_str = payload
     code = 200
     if is_token_valid(token_str) == False:
         to_serialize['status'] = False
@@ -179,12 +182,13 @@ def users_register():
     #
     # print request.args # for get
     # print request.form # for post
-    payload = request.get_json()
     username, fullname, age, password = None, None, None, None
-    username = payload['username']
-    password = payload['password']
-    fullname = payload['fullname']
-    age = payload['age']
+    payload = request.get_json()
+    if payload:
+        username = payload['username']
+        password = payload['password']
+        fullname = payload['fullname']
+        age = payload['age']
     to_serialize = {'status': False}
     code = 200
     if username is None or fullname is None or age is None or password is None:
@@ -211,22 +215,28 @@ def users_register():
 @app.route("/users/authenticate", methods=['POST'])
 def users_authenticate():
     payload = request.get_json()
-    username = payload['username']
-    password = payload['password']
+    if payload:
+        username = payload['username']
+        password = payload['password']
+    else:
+        username = None
+        password = None
 
-    hashed_password = hashlib.sha512(password + SALT + username).hexdigest()
     token = None
-    user = User.objects(hashed_password=hashed_password).first()  ##????
-    if user is not None:
-        data = {'pk': str(user.pk), 'ip': request.remote_addr}
-        token = Token(token=str(uuid.uuid4()), data=json.dumps(data))
-        token.save()
 
     to_serialize = {'status': False}
     code = 200
     if username is None or password is None:
         to_serialize['error'] = 'Required parameter is missing'
-    elif token is not None:
+    else:
+        hashed_password = hashlib.sha512(password + SALT + username).hexdigest()
+        user = User.objects(hashed_password=hashed_password).first()  ##????
+        if user is not None:
+            data = {'pk': str(user.pk), 'ip': request.remote_addr}
+            token = Token(token=str(uuid.uuid4()), data=json.dumps(data))
+            token.save()
+
+    if token is not None:
         to_serialize['status'] = True
         to_serialize['result'] = {'token': token.token}
     # todo make the json_response() better
@@ -234,7 +244,6 @@ def users_authenticate():
         response=json.dumps(to_serialize),
         status=code,
         mimetype='application/json'
-
     )
     return response
 
@@ -242,8 +251,11 @@ def users_authenticate():
 @app.route("/users/expire", methods=['POST'])
 def users_expire():
     payload = request.get_json()
+    if payload:
+        token_str = payload['token']
+    else:
+        token_str = payload
     to_serialize = {'status': False}
-    token_str = payload['token']
     code = 200
     if is_token_valid(token_str) == False:
         to_serialize['status'] = False
@@ -287,7 +299,10 @@ def diary():
 def diary_post():
     to_serialize = {'status': False}
     payload = request.get_json()
-    token_str = payload['token']
+    if payload:
+        token_str = payload['token']
+    else:
+        token_str = payload
     code = 200
     if is_token_valid(token_str) == False:
         to_serialize['status'] = False
@@ -300,16 +315,15 @@ def diary_post():
         username = user.username
         results = Diary.objects(username=username)
         result = []
-        if results[0] is not None:
-            result = []
+        if results is not None:
             for oneresult in results:
                 diary = {'id': oneresult.id, 'title': oneresult.title, 'author': oneresult.username,
                          'publish_date': oneresult.published_time, 'public': oneresult.public, 'text': oneresult.text}
                 result.append(json.dumps(diary))
-            to_serialize['status'] = True
-            to_serialize['result'] = result
+        to_serialize['status'] = True
+        to_serialize['result'] = result
 
-            # todo make the json_response() better
+    # todo make the json_response() better
     response = app.response_class(
         response=json.dumps(to_serialize),
         status=code,
@@ -322,7 +336,10 @@ def diary_post():
 def diary_creation():
     to_serialize = {'status': False}
     payload = request.get_json()
-    token_str = payload['token']
+    if payload:
+        token_str = payload['token']
+    else:
+        token_str = payload
     code = 200
     if is_token_valid(token_str) == False:
         to_serialize['status'] = False
@@ -357,7 +374,11 @@ def diary_creation():
 @app.route("/diary/delete", methods=['POST'])
 def diary_delete():
     to_serialize = {'status': False}
-    token_str = request.get_json()['token']
+    payload = request.get_json()
+    if payload:
+        token_str = payload['token']
+    else:
+        token_str = payload
     code = 200
     if is_token_valid(token_str) == False:
         to_serialize['status'] = False
@@ -387,7 +408,11 @@ def diary_delete():
 @app.route("/diary/permission", methods=['POST'])
 def diary_permission():
     to_serialize = {'status': False}
-    token_str = request.get_json()['token']
+    payload = request.get_json()
+    if payload:
+        token_str = payload['token']
+    else:
+        token_str = payload
     code = 200
     if is_token_valid(token_str) == False:
         to_serialize['status'] = False
