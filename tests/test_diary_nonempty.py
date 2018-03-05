@@ -96,7 +96,7 @@ class TestDiaryNonEmpty(object):
         delete_diary(diary_private_id)
 
     def test_diary_get(self):
-        response = self.client.get(url_for('diary'))
+        response = self.client.get(url_for('views.diary'))
         assert response.status_code == 200
 
         data = json.loads(response.data)
@@ -115,7 +115,7 @@ class TestDiaryNonEmpty(object):
         assert diary_data['text'] == diary_public_text
 
     def test_diary_post_owner(self):
-        response = self.client.post(url_for('diary'),
+        response = self.client.post(url_for('views.diary'),
                                     data=dict(token=token1uuid),
                                     environ_base={'REMOTE_ADDR': localhost})
         assert response.status_code == 200
@@ -136,7 +136,7 @@ class TestDiaryNonEmpty(object):
         assert diary_data['text'] == diary_private_text
 
     def test_diary_post_not_owner(self):
-        response = self.client.post(url_for('diary'),
+        response = self.client.post(url_for('views.diary'),
                                     data=dict(token=token2uuid),
                                     environ_base={'REMOTE_ADDR': localhost})
         assert response.status_code == 200
@@ -149,7 +149,7 @@ class TestDiaryNonEmpty(object):
         assert len(data['result']) == 0
 
     def test_diary_create(self):
-        response = self.client.post(url_for('diary_creation'),
+        response = self.client.post(url_for('views.diary_creation'),
                                     data=dict(token=token2uuid),
                                     environ_base={'REMOTE_ADDR': localhost})
         assert response.status_code == 200
@@ -167,7 +167,7 @@ class TestDiaryNonEmpty(object):
         delete_diary(data['id'])
 
     def test_diary_delete_not_owner(self):
-        response = self.client.post(url_for('diary_delete'),
+        response = self.client.post(url_for('views.diary_delete'),
                                     data=dict(token=token2uuid, id=diary_private_id),
                                     environ_base={'REMOTE_ADDR': localhost})
         assert response.status_code == 200
@@ -178,7 +178,7 @@ class TestDiaryNonEmpty(object):
 
     def test_diary_delete_owner(self):
         add_diary(999, "test_diary_delete", user2, diary_time, True, "user2 owner")
-        response = self.client.post(url_for('diary_delete'),
+        response = self.client.post(url_for('views.diary_delete'),
                                     data=dict(token=token2uuid, id=999),
                                     environ_base={'REMOTE_ADDR': localhost})
         assert response.status_code == 200
@@ -191,7 +191,7 @@ class TestDiaryNonEmpty(object):
         assert not diary
 
     def test_diary_permission_not_owner(self):
-        response = self.client.post(url_for('diary_permission'),
+        response = self.client.post(url_for('views.diary_permission'),
                                     data=dict(token=token2uuid, id=diary_private_id, public=True),
                                     environ_base={'REMOTE_ADDR': localhost})
         assert response.status_code == 200
@@ -204,7 +204,7 @@ class TestDiaryNonEmpty(object):
         assert not diary.public
 
     def test_diary_permission_owner_private_to_public(self):
-        response = self.client.post(url_for('diary_permission'),
+        response = self.client.post(url_for('views.diary_permission'),
                                     data=dict(token=token1uuid, id=diary_private_id, public=True),
                                     environ_base={'REMOTE_ADDR': localhost})
         assert response.status_code == 200
@@ -217,7 +217,7 @@ class TestDiaryNonEmpty(object):
         assert diary.public
 
     def test_diary_permission_owner_public_to_private(self):
-        response = self.client.post(url_for('diary_permission'),
+        response = self.client.post(url_for('views.diary_permission'),
                                     data=dict(token=token1uuid, id=diary_public_id, public=False),
                                     environ_base={'REMOTE_ADDR': localhost})
         assert response.status_code == 200

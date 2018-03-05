@@ -10,7 +10,7 @@ class TestDiaryEmpty(object):
         diary = Diary.objects(id=999).first()
         if diary:
             diary.delete()
-        response = self.client.get(url_for('diary'))
+        response = self.client.get(url_for('views.diary'))
         assert response.status_code == 200
 
         data = json.loads(response.data)
@@ -21,7 +21,7 @@ class TestDiaryEmpty(object):
         assert len(data['result']) == 0
 
     def test_diary_post_no_token(self):
-        response = self.client.post(url_for('diary'))
+        response = self.client.post(url_for('views.diary'))
         assert response.status_code == 200
 
         data = json.loads(response.data)
@@ -32,7 +32,7 @@ class TestDiaryEmpty(object):
         assert 'Invalid authentication token' in data['error']
 
     def test_diary_post_invalid_token(self):
-        response = self.client.post(url_for('diary'), data=dict(token="e7326198-7055-4559-8d2b-b4568855211e"))
+        response = self.client.post(url_for('views.diary'), data=dict(token="e7326198-7055-4559-8d2b-b4568855211e"))
         assert response.status_code == 200
 
         data = json.loads(response.data)
@@ -43,7 +43,7 @@ class TestDiaryEmpty(object):
         assert 'Invalid authentication token' in data['error']
 
     def test_diary_create_no_token(self):
-        response = self.client.post(url_for('diary_creation'))
+        response = self.client.post(url_for('views.diary_creation'))
         assert response.status_code == 200
 
         data = json.loads(response.data)
@@ -54,7 +54,7 @@ class TestDiaryEmpty(object):
         assert 'Invalid authentication token' in data['error']
 
     def test_diary_create_invalid_token(self):
-        response = self.client.post(url_for('diary_creation'), data=dict(token="e7326198-7055-4559-8d2b-b4568855211e"))
+        response = self.client.post(url_for('views.diary_creation'), data=dict(token="e7326198-7055-4559-8d2b-b4568855211e"))
         assert response.status_code == 200
 
         data = json.loads(response.data)
@@ -65,7 +65,7 @@ class TestDiaryEmpty(object):
         assert 'Invalid authentication token' in data['error']
 
     def test_diary_delete_no_token(self):
-        response = self.client.post(url_for('diary_delete'))
+        response = self.client.post(url_for('views.diary_delete'))
         assert response.status_code == 200
 
         data = json.loads(response.data)
@@ -76,7 +76,7 @@ class TestDiaryEmpty(object):
         assert 'Invalid authentication token' in data['error']
 
     def test_diary_delete_invalid_token(self):
-        response = self.client.post(url_for('diary_delete'), data=dict(token="e7326198-7055-4559-8d2b-b4568855211e"))
+        response = self.client.post(url_for('views.diary_delete'), data=dict(token="e7326198-7055-4559-8d2b-b4568855211e"))
         assert response.status_code == 200
 
         data = json.loads(response.data)
@@ -87,7 +87,7 @@ class TestDiaryEmpty(object):
         assert 'Invalid authentication token' in data['error']
 
     def test_diary_permission_no_token(self):
-        response = self.client.post(url_for('diary_permission'))
+        response = self.client.post(url_for('views.diary_permission'))
         assert response.status_code == 200
 
         data = json.loads(response.data)
@@ -98,7 +98,7 @@ class TestDiaryEmpty(object):
         assert 'Invalid authentication token' in data['error']
 
     def test_diary_permission_invalid_token(self):
-        response = self.client.post(url_for('diary_permission'), data=dict(token="e7326198-7055-4559-8d2b-b4568855211e"))
+        response = self.client.post(url_for('views.diary_permission'), data=dict(token="e7326198-7055-4559-8d2b-b4568855211e"))
         assert response.status_code == 200
 
         data = json.loads(response.data)
