@@ -2,7 +2,8 @@ import pytest
 import json
 import hashlib
 from flask import url_for
-from src.service.app import SALT
+#from src.service.app import SALT
+from flask import current_app as app
 from src.service.models import User, Token, is_token_valid
 from utils import send_post_data
 user1 = "user1"
@@ -13,11 +14,18 @@ token1uuid = "f7d86d6c-2c13-47b2-8d45-3da9cf943fc9"
 expired_token = "e7326198-7055-4559-8d2b-b4568855211e"
 localhost = '127.0.0.1'
 
+from flask_mongoengine import MongoEngine
+from mongoengine import connect
 
 @pytest.mark.usefixtures('client_class')
 class TestUsersNonEmpty(object):
     @classmethod
     def setup_class(cls):
+        # db = connect('mongodb')
+        # db.drop_database('db_test')
+        # db.close()
+        SALT = app.config.get('SALT')
+        print SALT
         hash_password = hashlib.sha512(user1pw + SALT + user1).hexdigest()
         User(username=user1, hashed_password=hash_password, fullname=user1name, age=user1age).save()
         user = User.objects(username=user1).first()
