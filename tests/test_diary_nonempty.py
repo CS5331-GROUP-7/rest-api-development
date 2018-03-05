@@ -6,6 +6,9 @@ from flask import url_for
 from flask import current_app as app
 from src.service.models import User, Token, Diary
 from utils import send_post_data
+
+from flask_mongoengine import MongoEngine
+from mongoengine import connect
 user1 = "user1"
 user1pw = "password1"
 user1name = "user1"
@@ -73,6 +76,10 @@ def delete_diary(diary_id):
 class TestDiaryNonEmpty(object):
     @classmethod
     def setup_class(cls):
+
+        db = connect('db_test',host='mongodb')
+        db.drop_database('db_test')
+        db.close()
         global diary_public_id,diary_private_id
         user1id = add_user(user1, user1name, user1age, user1pw)
         data = {'pk': user1id, 'ip': localhost}
@@ -149,9 +156,9 @@ class TestDiaryNonEmpty(object):
         assert data['status']
         assert len(data['result']) == 0
 
-    def test_diary_create(self):
+    def test_diary_create_success(self):
         response = send_post_data(self.client,url_for('views.diary_creation'),
-                                    data=dict(token=token2uuid))
+                                    data=dict(token=token2uuid,title=diary_public_title,text=diary_public_text,public=True))
         assert response.status_code == 200
 
         data = json.loads(response.data)
@@ -160,11 +167,17 @@ class TestDiaryNonEmpty(object):
         assert 'id' in data['result']
 
         assert data['status']
-        assert data['result']['id'] == 1
+        assert data['result']['id'] == 3
 
-        count = Counter.objects()[0]
-        count.update(count=0)
         delete_diary(data['id'])
+
+    def test_diary_create_error(self):
+        response = send_post_data(self.client,url_for('views.diary_creation'),
+                                    data=dict(token=token2uuid))
+        assert response.status_code == 200
+
+        data = json.loads(response.data)
+        assert 'error' in data
 
     def test_diary_delete_not_owner(self):
         response = send_post_data(self.client,url_for('views.diary_delete'),

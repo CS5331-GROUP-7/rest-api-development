@@ -12,17 +12,9 @@ class TestUsersEmpty(object):
 
     @classmethod
     def setup_class(self):
-
-        db = connect('mongodb')
+        db = connect('db_test',host='mongodb')
         db.drop_database('db_test')
         db.close()
-        # db = connect('mongodb')
-        # db.drop_database('db_test')
-        #code = 200
-        #res = urllib2.urlopen('http://app:8080/debug/resetdb')
-
-        #assert 'success' in res.read()
-        #assert res.code == 200
 
 
     @classmethod

@@ -3,12 +3,11 @@ var API_ENDPOINT = "http://localhost:8080"
 function ajax_post(url, data, callback) {
     var xmlhttp = new XMLHttpRequest();
     xmlhttp.onreadystatechange = function() {
-        if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+        if (xmlhttp.readyState == 4 && xmlhttp.status == 201) {
             console.log('responseText:' + xmlhttp.responseText);
             try {
                 var data = JSON.parse(xmlhttp.responseText);
             } catch(err) {
-
 		        document.getElementById("demo_dbg").innerHTML = err.message + " in " + xmlhttp.responseText;
                 console.log(err.message + " in " + xmlhttp.responseText);
                 return ;
@@ -39,10 +38,9 @@ function registerSubmit() {
 
     ajax_post(API_ENDPOINT + '/users/register', data, function(data) {
         if (data.status) {
-            document.getElementById("response_status").innerHTML = "Register User succeeded";
-        }
-        else {
-            document.getElementById("response_status").innerHTML = "Register User failed";
+            document.getElementById("response_status").innerHTML = "<div class='alert alert-info'>Register User succeeded</div>";
+        } else {
+            document.getElementById("response_status").innerHTML = "<div class='alert alert-info'>Register User failed</div>";
         }
     });
     return false;

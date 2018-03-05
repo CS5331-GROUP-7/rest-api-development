@@ -3,9 +3,27 @@ import json
 from flask import url_for
 from src.service.models import Diary
 
+# from flask import current_app as app
+# from src.service.models import User, Token, Diary
 
+from flask_mongoengine import MongoEngine
+from mongoengine import connect
 @pytest.mark.usefixtures('client_class')
 class TestDiaryEmpty(object):
+
+    @classmethod
+    def setup_class(cls):
+
+        db = connect('db_test',host='mongodb')
+        db.drop_database('db_test')
+        db.close()
+        # Diary.drop_collection()
+        # Token.drop_collection()
+        # User.drop_collection()
+        pass
+        # db = connect('mongodb')
+        # db.drop_database('db_test')
+        # db.close()
     def test_diary_get_empty(self):
         diary = Diary.objects(id=999).first()
         if diary:

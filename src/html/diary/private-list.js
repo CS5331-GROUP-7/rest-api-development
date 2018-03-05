@@ -62,17 +62,16 @@ function toggleDiaryTo(id, to) {
 ajax_post(API_ENDPOINT + '/diary', {'token': localStorage.getItem('token')}, function(data) {
     if (data.status) {
         var members = data.result;
-        var output = "<p>All Diaries</p><ul>";
+        var output = "<ul>";
         for (var i = 0; i < members.length; i++) {
             member = JSON.parse(members[i]);
-            output += "<li><div>" + 
-                "Title: " + member["title"] + "<br>" +
-                "Text: " + member["text"] + "<br>" +
-                "Public: " + member["public"] + "<br>" +
-                "<div></li>";
-            output += "<button onclick='deleteDiary("+ member["id"]+ ")'>Delete</button>";  
+            output += "<div class='form-group row'>" + 
+                "<div class='col-sm-12'>Title: " + member["title"] + "</div>" +
+                "<div class='col-sm-12'>Text: " + member["text"] + "</div>" +
+                "<div class='col-sm-12'>Public: " + member["public"] + "</div>";
+            output += "<div class='col-sm-12'><button class='btn btn-danger' onclick='deleteDiary("+ member["id"]+ ")'>Delete</button>";  
             var message = member["public"]? "Toggle to private": "Toggle to public";
-            output += "<button onclick='toggleDiaryTo("+ member["id"]+"," +member["public"] +  ")'>" + message + "</button>"; 
+            output += "<button class='btn btn-info' onclick='toggleDiaryTo("+ member["id"]+"," +member["public"] +  ")'>" + message + "</button></div></div>"; 
 
         }
         output += "</ul>";

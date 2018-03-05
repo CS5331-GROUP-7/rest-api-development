@@ -37,10 +37,10 @@ function submitLogin() {
     ajax_post(API_ENDPOINT + '/users/authenticate', data, function(data) {
         if (data.status) {
             localStorage.setItem("token", data.result.token);
-            document.getElementById("response_status").innerHTML = "Login User succeeded!";
+            document.getElementById("response_status").innerHTML = "<div class='alert alert-info'>Login User succeeded</div>";
         }
         else {
-            document.getElementById("response_status").innerHTML = "Login User failed";
+            document.getElementById("response_status").innerHTML = "<div class='alert alert-info'>Login User failed</div>";
         }
     });
     return false;
