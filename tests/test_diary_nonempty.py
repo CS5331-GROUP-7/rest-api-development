@@ -3,7 +3,7 @@ import json
 import hashlib
 import datetime
 from flask import url_for
-from src.service.app import SALT
+from flask import current_app as app
 from src.service.models import User, Token, Diary
 from utils import send_post_data
 user1 = "user1"
@@ -32,6 +32,7 @@ localhost = '127.0.0.1'
 
 
 def add_user(username, name, age, pw):
+    SALT = app.config.get('SALT')
     hash_password = hashlib.sha512(pw + SALT + username).hexdigest()
     User(username=username, hashed_password=hash_password, fullname=name, age=age).save()
     user = User.objects(username=username).first()

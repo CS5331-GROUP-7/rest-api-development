@@ -13,7 +13,9 @@ class TestUsersEmpty(object):
     @classmethod
     def setup_class(self):
 
-        pass
+        db = connect('mongodb')
+        db.drop_database('db_test')
+        db.close()
         # db = connect('mongodb')
         # db.drop_database('db_test')
         #code = 200

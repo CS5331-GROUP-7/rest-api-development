@@ -22,6 +22,7 @@ db.init_app(app)
 
 
 class User(db.Document):
+    uid = db.SequenceField()
     name =  db.StringField()
     password = db.StringField()
     registered_date = db.DateTimeField(default=datetime.datetime.now)
