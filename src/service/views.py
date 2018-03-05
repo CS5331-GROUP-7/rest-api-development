@@ -246,10 +246,14 @@ def diary_creation():
     to_serialize = {'status': False}
     payload = request.get_json()
     payload2 = request.get_json()
-    title = payload2['title']
-    text = payload2['text']
-    public = payload2['public']
-            
+    if payload2 and \
+            'title' in payload2 and \
+            'text' in payload2 and \
+            'public' in payload2:
+        title = payload2['title']
+        text = payload2['text']
+        public = payload2['public']
+    
     if payload:
         token_str = payload['token']
     else:
@@ -290,7 +294,11 @@ def diary_creation():
 def diary_delete():
     to_serialize = {'status': False}
     payload = request.get_json()
-    id = request.get_json()['id']
+    payload2 = request.get_json()
+    if payload2 and \
+            'id' in payload2:
+        id = payload2['id']
+    
 
     if payload:
         token_str = payload['token']
@@ -331,6 +339,13 @@ def diary_permission():
     payload2 = request.get_json()
     public = payload2['public']
     id = payload2['id']
+    payload2 = request.get_json()
+    if payload2 and \
+            'id' in payload2 and \
+            'public' in payload2:
+
+        id = payload2['id']
+        public = payload2['public']
             
     if payload:
         token_str = payload['token']
