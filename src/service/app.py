@@ -28,16 +28,17 @@ def create_app(**config_overrides):
     return app
 
 
-app = create_app(
-    MONGODB_SETTINGS={'db': 'db_deploy', 'host': 'mongodb'},
-    TESTING=True,
-    SALT='IfHYBwi5ZUFZD9VaonnK',
-)
-SALT = app.config.get('SALT')
+# app = create_app(
+    # MONGODB_SETTINGS={'db': 'db_deploy', 'host': 'mongodb'},
+    # TESTING=True,
+    # SALT='IfHYBwi5ZUFZD9VaonnK',
+# )
+# app = None
+# SALT = 'dfdf'
+# SALT = app.config.get('SALT')
 
 
 # Enable cross origin sharing for all endpoints
-CORS(app)
 
 if __name__ == '__main__':
     # Change the working directory to the script directory
@@ -50,6 +51,7 @@ if __name__ == '__main__':
         TESTING=True,
         SALT='IfHYBwi5ZUFZD9VaonnK',
     )
+    CORS(app)
 
     # Run the application
     app.run(debug=False, port=8080, host="0.0.0.0")

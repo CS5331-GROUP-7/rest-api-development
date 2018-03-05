@@ -4,6 +4,7 @@ import datetime
 import hashlib
 import json
 import uuid
+from bson import ObjectId
 
 views = Blueprint('views', __name__)
 
@@ -54,10 +55,8 @@ def meta_members():
 def users():
     to_serialize = {'status': False}
     payload = request.get_json()
-    if payload:
+    if payload and 'token' in payload:
         token_str = payload['token']
-    else:
-        token_str = payload
     code = 200
     if not is_token_valid(token_str):
         to_serialize['status'] = False
@@ -66,7 +65,7 @@ def users():
         token = Token.objects(token=token_str).first()
         data = json.loads(token.data)
         pk = data['pk']
-        user = User.objects(userid=pk).first()
+        user = User.objects(pk=ObjectId(pk)).first()
         result = {'username': user.username, 'fullname': user.fullname, 'age': user.age}
         to_serialize['status'] = True
         to_serialize['result'] = json.dumps(result)
@@ -90,7 +89,11 @@ def users_register():
     username, fullname, age, password = None, None, None, None
     payload = request.get_json()
     current_app.logger.info(payload)
-    if payload:
+    if payload and \
+            'password' in payload and \
+            'username' in payload and \
+            'fullname' in payload and \
+            'age' in payload:
         username = payload['username']
         password = payload['password']
         fullname = payload['fullname']
@@ -122,12 +125,14 @@ def users_register():
 def users_authenticate():
     SALT = current_app.config.get('SALT')
     payload = request.get_json()
+    username = None
+    password = None
+
     if payload:
-        username = payload['username']
-        password = payload['password']
-    else:
-        username = None
-        password = None
+        if 'username' in payload:
+            username = payload['username']
+        if 'password' in payload:
+            password = payload['password']
 
     token = None
 
@@ -158,10 +163,8 @@ def users_authenticate():
 @views.route("/users/expire", methods=['POST'])
 def users_expire():
     payload = request.get_json()
-    if payload:
+    if payload and 'token' in payload:
         token_str = payload['token']
-    else:
-        token_str = payload
     to_serialize = {'status': False}
     code = 200
     if not is_token_valid(token_str):
@@ -217,7 +220,7 @@ def diary_post():
         token = Token.objects(token=token_str).first()
         data = json.loads(token.data)
         pk = data['pk']
-        user = User.objects(userid=pk).first()
+        user = User.objects(pk=ObjectId(pk)).first()
         username = user.username
         results = Diary.objects(username=username)
         result = []
@@ -242,6 +245,11 @@ def diary_post():
 def diary_creation():
     to_serialize = {'status': False}
     payload = request.get_json()
+    payload2 = request.get_json()
+    title = payload2['title']
+    text = payload2['text']
+    public = payload2['public']
+            
     if payload:
         token_str = payload['token']
     else:
@@ -251,21 +259,22 @@ def diary_creation():
         to_serialize['status'] = False
         to_serialize['error'] = 'Invalid authentication token.'
     else:
-        token = Token.objects(token=token_str).first()
-        data = json.loads(token.data)
-        pk = data['pk']
-        user = User.objects(userid=pk).first()
-        username = user.username
-        payload2 = request.get_json()
-        title = payload2['title']
-        text = payload2['text']
-        public = payload2['public']
-        dtnow = datetime.datetime.now()
-        published_time = dtnow.isoformat()
+        if title is None or text is None or public is None:
+            to_serialize['error'] = 'Required parameter is missing'
+        else:
+            token = Token.objects(token=token_str).first()
+            data = json.loads(token.data)
+            pk = data['pk']
+            user = User.objects(pk=ObjectId(pk)).first()
+            username = user.username
+            dtnow = datetime.datetime.now()
+            published_time = dtnow.replace(microsecond=0).isoformat()
 
-        Diary(id=id, title=title, username=username, published_time=published_time, public=public, text=text).save()
-        to_serialize['status'] = True
-        to_serialize['result'] = {'id': id}
+            diary = Diary(title=title, username=username, published_time=published_time, public=public, text=text)
+            diary.save()
+            id=diary.id
+            to_serialize['status'] = True
+            to_serialize['result'] = {'id': id}
 
     # todo make the json_response() better
     response = current_app.response_class(
@@ -281,6 +290,8 @@ def diary_creation():
 def diary_delete():
     to_serialize = {'status': False}
     payload = request.get_json()
+    id = request.get_json()['id']
+
     if payload:
         token_str = payload['token']
     else:
@@ -290,17 +301,19 @@ def diary_delete():
         to_serialize['status'] = False
         to_serialize['error'] = 'Invalid authentication token.'
     else:
-        token = Token.objects(token=token_str).first()
-        data = json.loads(token.data)
-        pk = data['pk']
-        user = User.objects(userid=pk).first()
-        username = user.username
-        id = request.get_json()['id']
-        diary = Diary.objects(id=id).first()
-        DiaryOwner = diary.username
-        if DiaryOwner == username:
-            diary.delete()
-            to_serialize['status'] = True
+        if id is None:
+            to_serialize['error'] = 'Required parameter is missing'
+        else:
+            token = Token.objects(token=token_str).first()
+            data = json.loads(token.data)
+            pk = data['pk']
+            user = User.objects(pk=ObjectId(pk)).first()
+            username = user.username
+            diary = Diary.objects(id=id).first()
+            DiaryOwner = diary.username
+            if DiaryOwner == username:
+                diary.delete()
+                to_serialize['status'] = True
 
     # todo make the json_response() better
     response = current_app.response_class(
@@ -315,6 +328,10 @@ def diary_delete():
 def diary_permission():
     to_serialize = {'status': False}
     payload = request.get_json()
+    payload2 = request.get_json()
+    public = payload2['public']
+    id = payload2['id']
+            
     if payload:
         token_str = payload['token']
     else:
@@ -324,19 +341,19 @@ def diary_permission():
         to_serialize['status'] = False
         to_serialize['error'] = 'Invalid authentication token.'
     else:
-        token = Token.objects(token=token_str).first()
-        data = json.loads(token.data)
-        pk = data['pk']
-        user = User.objects(userid=pk).first()
-        username = user.username
-        payload2 = request.get_json()
-        public = payload2['public']
-        id = payload2['id']
-        diary = Diary.objects(id=id).first()
-        DiaryOwner = diary.username
-        if DiaryOwner == username:
-            diary.update(public=public)
-            to_serialize['status'] = True
+        if id is None or public is None:
+            to_serialize['error'] = 'Required parameter is missing'
+        else:
+            token = Token.objects(token=token_str).first()
+            data = json.loads(token.data)
+            pk = data['pk']
+            user = User.objects(pk=ObjectId(pk)).first()
+            username = user.username
+            diary = Diary.objects(id=id).first()
+            DiaryOwner = diary.username
+            if DiaryOwner == username:
+                diary.update(public=public)
+                to_serialize['status'] = True
 
     # todo make the json_response() better
     response = current_app.response_class(
