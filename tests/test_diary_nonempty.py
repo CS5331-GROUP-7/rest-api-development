@@ -114,7 +114,8 @@ class TestDiaryNonEmpty(object):
 
     def test_diary_post_owner(self):
         response = self.client.post(url_for('diary'),
-                                    data=dict(token=token1uuid),
+                                    data=json.dumps(dict(token=token1uuid)),
+                                    content_type='application/json',
                                     environ_base={'REMOTE_ADDR': localhost})
         assert response.status_code == 200
 
@@ -135,7 +136,8 @@ class TestDiaryNonEmpty(object):
 
     def test_diary_post_not_owner(self):
         response = self.client.post(url_for('diary'),
-                                    data=dict(token=token2uuid),
+                                    data=json.dumps(dict(token=token2uuid)),
+                                    content_type='application/json',
                                     environ_base={'REMOTE_ADDR': localhost})
         assert response.status_code == 200
 
@@ -148,7 +150,9 @@ class TestDiaryNonEmpty(object):
 
     def test_diary_create(self):
         response = self.client.post(url_for('diary_creation'),
-                                    data=dict(token=token2uuid),
+                                    data=json.dumps(
+                                        dict(token=token2uuid, title="New diary", text="Diary creation", public=True)),
+                                    content_type='application/json',
                                     environ_base={'REMOTE_ADDR': localhost})
         assert response.status_code == 200
 
@@ -162,11 +166,12 @@ class TestDiaryNonEmpty(object):
 
         count = Counter.objects()[0]
         count.update(count=0)
-        delete_diary(data['id'])
+        delete_diary(data['result']['id'])
 
     def test_diary_delete_not_owner(self):
         response = self.client.post(url_for('diary_delete'),
-                                    data=dict(token=token2uuid, id=diary_private_id),
+                                    data=json.dumps(dict(token=token2uuid, id=diary_private_id)),
+                                    content_type='application/json',
                                     environ_base={'REMOTE_ADDR': localhost})
         assert response.status_code == 200
 
@@ -177,7 +182,8 @@ class TestDiaryNonEmpty(object):
     def test_diary_delete_owner(self):
         add_diary(999, "test_diary_delete", user2, diary_time, True, "user2 owner")
         response = self.client.post(url_for('diary_delete'),
-                                    data=dict(token=token2uuid, id=999),
+                                    data=json.dumps(dict(token=token2uuid, id=999)),
+                                    content_type='application/json',
                                     environ_base={'REMOTE_ADDR': localhost})
         assert response.status_code == 200
 
@@ -190,7 +196,8 @@ class TestDiaryNonEmpty(object):
 
     def test_diary_permission_not_owner(self):
         response = self.client.post(url_for('diary_permission'),
-                                    data=dict(token=token2uuid, id=diary_private_id, public=True),
+                                    data=json.dumps(dict(token=token2uuid, id=diary_private_id, public=True)),
+                                    content_type='application/json',
                                     environ_base={'REMOTE_ADDR': localhost})
         assert response.status_code == 200
 
@@ -203,7 +210,8 @@ class TestDiaryNonEmpty(object):
 
     def test_diary_permission_owner_private_to_public(self):
         response = self.client.post(url_for('diary_permission'),
-                                    data=dict(token=token1uuid, id=diary_private_id, public=True),
+                                    data=json.dumps(dict(token=token1uuid, id=diary_private_id, public=True)),
+                                    content_type='application/json',
                                     environ_base={'REMOTE_ADDR': localhost})
         assert response.status_code == 200
 
@@ -216,7 +224,8 @@ class TestDiaryNonEmpty(object):
 
     def test_diary_permission_owner_public_to_private(self):
         response = self.client.post(url_for('diary_permission'),
-                                    data=dict(token=token1uuid, id=diary_public_id, public=False),
+                                    data=json.dumps(dict(token=token1uuid, id=diary_public_id, public=False)),
+                                    content_type='application/json',
                                     environ_base={'REMOTE_ADDR': localhost})
         assert response.status_code == 200
 
