@@ -338,9 +338,6 @@ def diary_permission():
     to_serialize = {'status': False}
     payload = request.get_json()
     payload2 = request.get_json()
-    public = payload2['public']
-    id = payload2['id']
-    payload2 = request.get_json()
     if payload2 and \
             'id' in payload2 and \
             'public' in payload2:
