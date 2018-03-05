@@ -5,7 +5,7 @@ from src.service.app import ENDPOINT_LIST
 
 
 def test_get_index(client):
-    page = client.get(url_for('index'))  # can use the endpoint(method) name here
+    page = client.get(url_for('views.index'))  # can use the endpoint(method) name here
     assert page.status_code == 200  # response code
 
     data = json.loads(page.data)  # response data

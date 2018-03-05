@@ -19,6 +19,8 @@ def create_app(**config_overrides):
     app = Flask(__name__, static_folder='static', static_url_path='')
 
     # Load config.
+    from views import views
+    app.register_blueprint(views)
     #app.config.from_object('config')
 
     # app.config['MONGODB_SETTINGS'] = {'db': 'db_deploy',
