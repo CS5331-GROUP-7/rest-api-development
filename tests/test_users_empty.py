@@ -3,7 +3,7 @@ import json
 from flask import url_for
 from src.service.models import User
 import urllib2
-from utils import send_post_data
+from utils import send_post_data, send_post
 
 from flask_mongoengine import MongoEngine
 from mongoengine import connect
@@ -13,7 +13,9 @@ class TestUsersEmpty(object):
     @classmethod
     def setup_class(self):
 
-        pass
+        db = connect('mongodb')
+        db.drop_database('db_test')
+        db.close()
         # db = connect('mongodb')
         # db.drop_database('db_test')
         #code = 200
@@ -28,18 +30,21 @@ class TestUsersEmpty(object):
         pass
 
     def test_users_no_token(self):
-        response = send_post_data(self.client,url_for('views.users'))
-        assert response.status_code == 200
+        response = send_post(self.client,
+                             url_for('views.users'))
+        assert response.status_code == 400
 
-        data = json.loads(response.data)
-        assert 'error' in data
-        assert 'status' in data
-
-        assert not data['status']
-        assert 'Invalid authentication token' in data['error']
+        # data = json.loads(response.data)
+        # assert 'error' in data
+        # assert 'status' in data
+        #
+        # assert not data['status']
+        # assert 'Invalid authentication token' in data['error']
 
     def test_users_invalid_token(self):
-        response = send_post_data(self.client,url_for('views.users'), data=dict(token="b563fdc7-1c1c-46d8-a7a0-42ea1f1d9c4d"))
+        response = send_post_data(self.client,
+                                  url_for('views.users'),
+                                  dict(token="b563fdc7-1c1c-46d8-a7a0-42ea1f1d9c4d"))
         assert response.status_code == 200
 
         data = json.loads(response.data)
@@ -50,18 +55,21 @@ class TestUsersEmpty(object):
         assert 'Invalid authentication token' in data['error']
 
     def test_user_register_no_args(self):
-        response = send_post_data(self.client,url_for('views.users_register'))
-        assert response.status_code == 200
+        response = send_post(self.client,
+                             url_for('views.users_register'))
+        assert response.status_code == 400
 
-        data = json.loads(response.data)
-        assert 'error' in data
-        assert 'status' in data
-
-        assert not data['status']
-        assert 'Required parameter is missing' in data['error']
+        # data = json.loads(response.data)
+        # assert 'error' in data
+        # assert 'status' in data
+        #
+        # assert not data['status']
+        # assert 'Required parameter is missing' in data['error']
 
     def test_user_register_no_username(self):
-        response = send_post_data(self.client,url_for('views.users_register'), data=dict(password="2", fullname="3", age="4"))
+        response = send_post_data(self.client,
+                                  url_for('views.users_register'),
+                                  dict(password="2", fullname="3", age="4"))
         assert response.status_code == 200
 
         data = json.loads(response.data)
@@ -72,7 +80,9 @@ class TestUsersEmpty(object):
         assert 'Required parameter is missing' in data['error']
 
     def test_user_register_no_password(self):
-        response = send_post_data(self.client,url_for('views.users_register'), data=dict(username="1", fullname="3", age="4"))
+        response = send_post_data(self.client,
+                                  url_for('views.users_register'),
+                                  dict(username="1", fullname="3", age="4"))
         assert response.status_code == 200
 
         data = json.loads(response.data)
@@ -83,7 +93,9 @@ class TestUsersEmpty(object):
         assert 'Required parameter is missing' in data['error']
 
     def test_user_register_no_fullname(self):
-        response = send_post_data(self.client,url_for('views.users_register'), data=dict(username="1", password="2", age="4"))
+        response = send_post_data(self.client,
+                                  url_for('views.users_register'),
+                                  dict(username="1", password="2", age="4"))
         assert response.status_code == 200
 
         data = json.loads(response.data)
@@ -94,7 +106,9 @@ class TestUsersEmpty(object):
         assert 'Required parameter is missing' in data['error']
 
     def test_user_register_no_age(self):
-        response = send_post_data(self.client,url_for('views.users_register'), data=dict(username="1", password="2", fullname="3"))
+        response = send_post_data(self.client,
+                                  url_for('views.users_register'),
+                                  dict(username="1", password="2", fullname="3"))
         assert response.status_code == 200
 
         data = json.loads(response.data)
@@ -105,8 +119,9 @@ class TestUsersEmpty(object):
         assert 'Required parameter is missing' in data['error']
 
     def test_user_register_success(self):
-        response = send_post_data(self.client,url_for('views.users_register'),
-                                    data=dict(username="1", password="2", fullname="3", age="4"))
+        response = send_post_data(self.client,
+                                  url_for('views.users_register'),
+                                  dict(username="1", password="2", fullname="3", age="4"))
         assert response.status_code == 201
 
         data = json.loads(response.data)
@@ -121,18 +136,21 @@ class TestUsersEmpty(object):
         assert not User.objects(username="1").first()
 
     def test_user_authenticate_no_args(self):
-        response = send_post_data(self.client,url_for('views.users_authenticate'))
-        assert response.status_code == 200
+        response = send_post(self.client,
+                             url_for('views.users_authenticate'))
+        assert response.status_code == 400
 
-        data = json.loads(response.data)
-        assert 'error' in data
-        assert 'status' in data
-
-        assert not data['status']
-        assert 'Required parameter is missing' in data['error']
+        # data = json.loads(response.data)
+        # assert 'error' in data
+        # assert 'status' in data
+        #
+        # assert not data['status']
+        # assert 'Required parameter is missing' in data['error']
 
     def test_user_authenticate_no_username(self):
-        response = send_post_data(self.client,url_for('views.users_authenticate'), data=dict(password="2"))
+        response = send_post_data(self.client,
+                                  url_for('views.users_authenticate'),
+                                  dict(password="2"))
         assert response.status_code == 200
 
         data = json.loads(response.data)
@@ -143,7 +161,9 @@ class TestUsersEmpty(object):
         assert 'Required parameter is missing' in data['error']
 
     def test_user_authenticate_no_password(self):
-        response = send_post_data(self.client,url_for('views.users_authenticate'), data=dict(username="1"))
+        response = send_post_data(self.client,
+                                  url_for('views.users_authenticate'),
+                                  dict(username="1"))
         assert response.status_code == 200
 
         data = json.loads(response.data)
@@ -154,7 +174,9 @@ class TestUsersEmpty(object):
         assert 'Required parameter is missing' in data['error']
 
     def test_user_authenticate_valid_args_no_token(self):
-        response = send_post_data(self.client,url_for('views.users_authenticate'), data=dict(username="1", password="2"))
+        response = send_post_data(self.client,
+                                  url_for('views.users_authenticate'),
+                                  dict(username="1", password="2"))
         assert response.status_code == 200
 
         data = json.loads(response.data)
@@ -164,17 +186,20 @@ class TestUsersEmpty(object):
         assert not data['status']
 
     def test_users_expire_no_token(self):
-        response = send_post_data(self.client,url_for('views.users_expire'))
-        assert response.status_code == 200
-
-        data = json.loads(response.data)
-        assert 'error' not in data
-        assert 'status' in data
-
-        assert not data['status']
+        response = send_post(self.client,
+                             url_for('views.users_expire'))
+        assert response.status_code == 400
+        #
+        # data = json.loads(response.data)
+        # assert 'error' not in data
+        # assert 'status' in data
+        #
+        # assert not data['status']
 
     def test_users_expire_invalid_token(self):
-        response = send_post_data(self.client,url_for('views.users_expire'), data=dict(token="b563fdc7-1c1c-46d8-a7a0-42ea1f1d9c4d"))
+        response = send_post_data(self.client,
+                                  url_for('views.users_expire'),
+                                  dict(token="b563fdc7-1c1c-46d8-a7a0-42ea1f1d9c4d"))
         assert response.status_code == 200
 
         data = json.loads(response.data)
