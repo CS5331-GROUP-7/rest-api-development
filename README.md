@@ -105,23 +105,29 @@ Please fill out this section with details relevant to your team.
 
 #### Question 1: Briefly describe the web technology stack used in your implementation.
 
-Answer: Please replace this sentence with your answer.
+Answer: Linux -> Apache -> MongoDB -> Python
+
 
 #### Question 2: Are there any security considerations your team thought about?
 
-Answer: Please replace this sentence with your answer.
+Answer: 1. Since we use http instead of https, password is transmitted by plaintext. Before saved to the database, password is encrypted.
+2. For user authentication, token is used and this method is not safe since hacker can get the token and use it to authenticate. We check the user's IP address to make sure that this is the user who owns the token.
+3. In diary delete and permission adjust API, only diary id and token are given. Users can delete diary which may not belong to them. We check the token owner and diary owner before processing the diary.  
 
 #### Question 3: Are there any improvements you would make to the API specification to improve the security of the web application?
 
-Answer: Please replace this sentence with your answer.
+Answer: 1. Encrypt the password, token and diary before transmitting.
+2. For diary delete and permission adjust, processing a group of diaries by given ids rather than one id would be a good idea
+3. Response code
 
 #### Question 4: Are there any additional features you would like to highlight?
 
-Answer: Please replace this sentence with your answer.
+Answer: In order to develop this app in the future, we add debug mode which can test the APIs and show the status of the database. It is very convinient.
 
 #### Question 5: Is your web application vulnerable? If yes, how and why? If not, what measures did you take to secure it?
 
-Answer: Please replace this sentence with your answer.
+Answer: Yes. Data (password, token, text...) is not encrypted during the transmision. Hacker can get it and make our app unsafe.
+At the same time, there is no limitation for response times. This app is vulnerable under flooding attack.
 
 #### Feedback: Is there any other feedback you would like to give?
 
