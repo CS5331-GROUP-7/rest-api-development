@@ -65,7 +65,7 @@ def users():
         token = Token.objects(token=token_str).first()
         data = json.loads(token.data)
         pk = data['pk']
-        user = User.objects(pk=ObjectID(pk)).first()
+        user = User.objects(pk=ObjectId(pk)).first()
         result = {'username': user.username, 'fullname': user.fullname, 'age': user.age}
         to_serialize['status'] = True
         to_serialize['result'] = json.dumps(result)
