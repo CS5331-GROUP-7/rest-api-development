@@ -4,7 +4,7 @@ from flask import url_for
 
 
 def test_meta_heartbeat(client):
-    page = client.get(url_for('meta_heartbeat'))
+    page = client.get(url_for('views.meta_heartbeat'))
     assert page.status_code == 200
 
     data = json.loads(page.data)
@@ -13,7 +13,7 @@ def test_meta_heartbeat(client):
 
 
 def test_meta_members(client):
-    page = client.get(url_for('meta_members'))
+    page = client.get(url_for('views.meta_members'))
     assert page.status_code == 200
 
     data = json.loads(page.data)

@@ -6,27 +6,22 @@ from flask import Flask
 from flask_cors import CORS
 import json
 import os
-import uuid
-import flask
 from flask import request
-import hashlib
-#from flask import current_app as app
+
 sys.path.insert(0, os.path.realpath(os.path.join(os.path.dirname(__file__), '../../')))
 
 from flask_mongoengine import MongoEngine
+
 db = MongoEngine()
+
+
 def create_app(**config_overrides):
     app = Flask(__name__, static_folder='static', static_url_path='')
 
     # Load config.
     from views import views
     app.register_blueprint(views)
-    #app.config.from_object('config')
 
-    # app.config['MONGODB_SETTINGS'] = {'db': 'db_deploy',
-                                      # 'host': 'mongodb'}
-
-    #app.config['SALT'] = 'IfHYBwi5ZUFZD9VaonnK'
     # apply overrides
     app.config.update(config_overrides)
 
@@ -35,33 +30,38 @@ def create_app(**config_overrides):
 
     return app
 
-app=create_app(
-            MONGODB_SETTINGS={'db': 'db_deploy','host':'mongodb'},
-        TESTING=True,
-        SALT='IfHYBwi5ZUFZD9VaonnK',
-    )
-SALT=app.config.get('SALT')
-#app.logger.info('here')
+
+app = create_app(
+    MONGODB_SETTINGS={'db': 'db_deploy', 'host': 'mongodb'},
+    TESTING=True,
+    SALT='IfHYBwi5ZUFZD9VaonnK',
+)
+SALT = app.config.get('SALT')
+# app.logger.info('here')
 
 '''
 todo:move this to separte file
 '''
 
+
 def db_object_to_json(doc):
     ret = {}
     print doc._fields
-    #field_dict = doc.get_fields_info()
+    # field_dict = doc.get_fields_info()
     for field in doc._fields:
         app.logger.info(field)
         ret[field] = str(doc[field])
-    return  json.dumps(ret)
+    return json.dumps(ret)
+
+
 def db_object_to_dict(doc):
     ret = {}
-    #field_dict = doc.get_fields_info()
+    # field_dict = doc.get_fields_info()
     for field in doc._fields:
         app.logger.info(field)
         ret[field] = str(doc[field])
     return ret
+
 
 class User(db.Document):
     username = db.StringField()
@@ -101,6 +101,7 @@ class Diary(db.Document):
 
     def __str__(self):
         return self.__repr__();
+
     def __repr__(self):
         return db_object_to_json(self)
 
@@ -116,7 +117,6 @@ def is_token_valid(token_str):
     return True
 
 
-#app = Flask(__name__)
 # Enable cross origin sharing for all endpoints
 CORS(app)
 
@@ -125,378 +125,14 @@ ENDPOINT_LIST = ['/', '/meta/heartbeat', '/meta/members',
                  '/users', '/users/register', '/users/authenticate', '/users/expire',
                  '/diary', '/diary/create', '/diary/delete', '/diary/permission']
 
-
-def make_json_response(data, status=True, code=200):
-    """Utility function to create the JSON responses."""
-
-    to_serialize = {}
-    if status:
-        to_serialize['status'] = True
-        if data is not None:
-            to_serialize['result'] = data
-    else:
-        to_serialize['status'] = False
-        to_serialize['error'] = data
-    response = app.response_class(
-        response=json.dumps(to_serialize),
-        status=code,
-        mimetype='application/json'
-    )
-    return response
-
-
-@app.route("/")
-def index():
-    """Returns a list of implemented endpoints."""
-    return make_json_response(ENDPOINT_LIST)
-
-
-@app.route("/meta/heartbeat")
-def meta_heartbeat():
-    """Returns true"""
-    return make_json_response(None)
-
-
-@app.route("/meta/members")
-def meta_members():
-    team_members = ['Zawlin', 'Xue Si', 'Shi Qing', 'Chen Hui']
-    return make_json_response(team_members)
-
-
-@app.route("/users", methods=['POST'])
-def users():
-    to_serialize = {'status': False}
-    payload = request.get_json()
-    if payload:
-        token_str = payload['token']
-    else:
-        token_str = payload
-    code = 200
-    if is_token_valid(token_str) == False:
-        to_serialize['status'] = False
-        to_serialize['error'] = 'Invalid authentication token.'
-    else:
-        token = Token.objects(token=token_str).first()
-        data = json.loads(token.data)
-        pk = data['pk']
-        user = User.objects(userid=pk).first()
-        result = {'username': user.username, 'fullname': user.fullname, 'age': user.age}
-        to_serialize['status'] = True
-        to_serialize['result'] = json.dumps(result)
-
-    # todo make the json_response() better
-    response = app.response_class(
-        response=json.dumps(to_serialize),
-        status=code,
-        mimetype='application/json'
-    )
-    return response
-
-
-@app.route("/users/register", methods=['POST'])
-def users_register():
-    # todo:remove plain text password storage
-    #
-    # print request.args # for get
-    # print request.form # for post
-    SALT = app.config.get('SALT')
-    username, fullname, age, password = None, None, None, None
-    payload = request.get_json()
-    app.logger.info(payload)
-    if payload:
-        username = payload['username']
-        password = payload['password']
-        fullname = payload['fullname']
-        age = payload['age']
-    to_serialize = {'status': False}
-    code = 200
-    if username is None or fullname is None or age is None or password is None:
-        to_serialize['error'] = 'Required parameter is missing'
-    elif User.objects(username=username).first() is not None:
-        to_serialize['error'] = 'Username already exists'
-    else:
-        to_serialize['status'] = True
-        # note our 'salt' is actually salt+username for extra safety
-        hashed_password = hashlib.sha512(password + SALT + username).hexdigest()
-        User(username=username, hashed_password=hashed_password, fullname=fullname, age=age).save()
-        code = 201
-
-    # todo make the json_response() better
-    response = app.response_class(
-        response=json.dumps(to_serialize),
-        status=code,
-        mimetype='application/json'
-    )
-    return response
-    # return make_json_response(ENDPOINT_LIST)
-
-
-@app.route("/users/authenticate", methods=['POST'])
-def users_authenticate():
-
-    SALT = app.config.get('SALT')
-    payload = request.get_json()
-    if payload:
-        username = payload['username']
-        password = payload['password']
-    else:
-        username = None
-        password = None
-
-    token = None
-
-    to_serialize = {'status': False}
-    code = 200
-    if username is None or password is None:
-        to_serialize['error'] = 'Required parameter is missing'
-    else:
-        hashed_password = hashlib.sha512(password + SALT + username).hexdigest()
-        user = User.objects(hashed_password=hashed_password).first()  ##????
-        if user is not None:
-            data = {'pk': str(user.pk), 'ip': request.remote_addr}
-            token = Token(token=str(uuid.uuid4()), data=json.dumps(data))
-            token.save()
-
-    if token is not None:
-        to_serialize['status'] = True
-        to_serialize['result'] = {'token': token.token}
-    # todo make the json_response() better
-    response = app.response_class(
-        response=json.dumps(to_serialize),
-        status=code,
-        mimetype='application/json'
-    )
-    return response
-
-
-@app.route("/users/expire", methods=['POST'])
-def users_expire():
-    payload = request.get_json()
-    if payload:
-        token_str = payload['token']
-    else:
-        token_str = payload
-    to_serialize = {'status': False}
-    code = 200
-    if is_token_valid(token_str) == False:
-        to_serialize['status'] = False
-    else:
-        token = Token.objects(token=token_str).first()
-        token.delete()
-        to_serialize['status'] = True
-
-    # todo make the json_response() better
-    response = app.response_class(
-        response=json.dumps(to_serialize),
-        status=code,
-        mimetype='application/json'
-    )
-    return response
-
-
-
-@app.route("/diary")
-def diary():
-    to_serialize = {'status': False}
-    code = 200
-    results = Diary.objects(public=True)
-    result = []
-    for oneresult in results:
-        diary1 = {'id': oneresult.id, 'title': oneresult.title, 'author': oneresult.username,
-                  'publish_date': oneresult.published_time, 'public': oneresult.public, 'text': oneresult.text}
-        result.append(json.dumps(diary1))
-    to_serialize['status'] = True
-    to_serialize['result'] = result
-
-    response = app.response_class(
-        response=json.dumps(to_serialize),
-        status=code,
-        mimetype='application/json'
-    )
-    return response
-
-
-@app.route("/diary", methods=['POST'])
-def diary_post():
-    to_serialize = {'status': False}
-    payload = request.get_json()
-    if payload:
-        token_str = payload['token']
-    else:
-        token_str = payload
-    code = 200
-    if is_token_valid(token_str) == False:
-        to_serialize['status'] = False
-        to_serialize['error'] = 'Invalid authentication token.'
-    else:
-        token = Token.objects(token=token_str).first()
-        data = json.loads(token.data)
-        pk = data['pk']
-        user = User.objects(userid=pk).first()
-        username = user.username
-        results = Diary.objects(username=username)
-        result = []
-        if results is not None:
-            for oneresult in results:
-                diary = {'id': oneresult.id, 'title': oneresult.title, 'author': oneresult.username,
-                         'publish_date': oneresult.published_time, 'public': oneresult.public, 'text': oneresult.text}
-                result.append(json.dumps(diary))
-        to_serialize['status'] = True
-        to_serialize['result'] = result
-
-    # todo make the json_response() better
-    response = app.response_class(
-        response=json.dumps(to_serialize),
-        status=code,
-        mimetype='application/json'
-    )
-    return response
-
-
-@app.route("/diary/create", methods=['POST'])
-def diary_creation():
-    to_serialize = {'status': False}
-    payload = request.get_json()
-    if payload:
-        token_str = payload['token']
-    else:
-        token_str = payload
-    code = 200
-    if is_token_valid(token_str) == False:
-        to_serialize['status'] = False
-        to_serialize['error'] = 'Invalid authentication token.'
-    else:
-        token = Token.objects(token=token_str).first()
-        data = json.loads(token.data)
-        pk = data['pk']
-        user = User.objects(userid=pk).first()
-        username = user.username
-        payload2 = request.get_json()
-        title = payload2['title']
-        text = payload2['text']
-        public = payload2['public']
-        dtnow = datetime.datetime.now()
-        published_time = dtnow.isoformat()
-
-        Diary(id=id, title=title, username=username, published_time=published_time, public=public, text=text).save()
-        to_serialize['status'] = True
-        to_serialize['result'] = {'id':id}
-
-    # todo make the json_response() better
-    response = app.response_class(
-        response=json.dumps(to_serialize),
-        status=code,
-        mimetype='application/json'
-
-    )
-    return response
-
-
-@app.route("/diary/delete", methods=['POST'])
-def diary_delete():
-    to_serialize = {'status': False}
-    payload = request.get_json()
-    if payload:
-        token_str = payload['token']
-    else:
-        token_str = payload
-    code = 200
-    if is_token_valid(token_str) == False:
-        to_serialize['status'] = False
-        to_serialize['error'] = 'Invalid authentication token.'
-    else:
-        token = Token.objects(token=token_str).first()
-        data = json.loads(token.data)
-        pk = data['pk']
-        user = User.objects(userid=pk).first()
-        username = user.username
-        id = request.get_json()['id']
-        diary = Diary.objects(id=id).first()
-        DiaryOwner = diary.username
-        if DiaryOwner == username:
-            diary.delete()
-            to_serialize['status'] = True
-
-    # todo make the json_response() better
-    response = app.response_class(
-        response=json.dumps(to_serialize),
-        status=code,
-        mimetype='application/json'
-    )
-    return response
-
-
-@app.route("/diary/permission", methods=['POST'])
-def diary_permission():
-    to_serialize = {'status': False}
-    payload = request.get_json()
-    if payload:
-        token_str = payload['token']
-    else:
-        token_str = payload
-    code = 200
-    if is_token_valid(token_str) == False:
-        to_serialize['status'] = False
-        to_serialize['error'] = 'Invalid authentication token.'
-    else:
-        token = Token.objects(token=token_str).first()
-        data = json.loads(token.data)
-        pk = data['pk']
-        user = User.objects(userid=pk).first()
-        username = user.username
-        payload2 = request.get_json()
-        public = payload2['public']
-        id = payload2['id']
-        diary = Diary.objects(id=id).first()
-        DiaryOwner = diary.username
-        if DiaryOwner == username:
-            diary.update(public=public)
-            to_serialize['status'] = True
-
-    # todo make the json_response() better
-    response = app.response_class(
-        response=json.dumps(to_serialize),
-        status=code,
-        mimetype='application/json'
-    )
-    return response
-
-
-@app.route("/debug/resetdb")
-def debug_resetdb():
-    to_serialize={'status':'success'}
-    User.drop_collection()
-    Token.drop_collection()
-    Diary.drop_collection()
-    code = 200
-    response = app.response_class(
-        response=json.dumps(to_serialize),
-        status=code,
-        mimetype='application/json'
-    )
-    return response
-
-@app.route("/debug/rawdb")
-def debug_getrawdb():
-    to_serialize={'status':'success'}
-    to_serialize['users']=[db_object_to_dict(usr) for usr in User.objects()]
-    to_serialize['tokens']=[db_object_to_dict(token) for token in Token.objects()]
-    to_serialize['diaries']=[db_object_to_dict(diary) for diary in Diary.objects()]
-    code = 200
-    response = app.response_class(
-        response=json.dumps(to_serialize),
-        status=code,
-        mimetype='application/json'
-    )
-    return response
 if __name__ == '__main__':
     # Change the working directory to the script directory
     abspath = os.path.abspath(__file__)
     dname = os.path.dirname(abspath)
     os.chdir(dname)
 
-    app=create_app(
-            MONGODB_SETTINGS={'db': 'db_deploy','host':'mongodb'},
+    app = create_app(
+        MONGODB_SETTINGS={'db': 'db_deploy', 'host': 'mongodb'},
         TESTING=True,
         SALT='IfHYBwi5ZUFZD9VaonnK',
     )
