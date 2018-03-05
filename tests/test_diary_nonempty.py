@@ -3,7 +3,8 @@ import json
 import hashlib
 import datetime
 from flask import url_for
-from src.service.app import User, Token, SALT, Diary
+from src.service.app import SALT
+from src.service.models import User, Token, Diary
 
 user1 = "user1"
 user1pw = "password1"

@@ -1,5 +1,5 @@
 from flask import current_app, Blueprint, request
-from app import is_token_valid, User, Token, Diary, db_object_to_dict, db_object_to_json
+from models import is_token_valid, User, Token, Diary, db_object_to_dict, db_object_to_json
 import datetime
 import hashlib
 import json

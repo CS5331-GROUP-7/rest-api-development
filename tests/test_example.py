@@ -1,7 +1,7 @@
 import pytest
 import json
 from flask import Flask, url_for
-from src.service.app import ENDPOINT_LIST
+from src.service.views import ENDPOINT_LIST
 
 
 def test_get_index(client):

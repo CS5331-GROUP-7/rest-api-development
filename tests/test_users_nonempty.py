@@ -2,7 +2,8 @@ import pytest
 import json
 import hashlib
 from flask import url_for
-from src.service.app import User, Token, SALT, is_token_valid
+from src.service.app import SALT
+from src.service.models import User, Token, is_token_valid
 
 user1 = "user1"
 user1pw = "password1"

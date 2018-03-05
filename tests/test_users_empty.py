@@ -1,7 +1,7 @@
 import pytest
 import json
 from flask import url_for
-from src.service.app import User
+from src.service.models import User
 import urllib2
 
 
