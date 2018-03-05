@@ -1,13 +1,14 @@
 #!/bin/bash
 
-#if [ "$EUID" -ne 0 ]
-  #then echo "Please run as root"
-  #exit
-#fi
+if [ "$EUID" -ne 0 ]
+  then echo "Please run as root"
+  exit
+fi
 
-#TEAMID=`md5sum README.md | cut -d' ' -f 1`
-#docker kill $(docker ps -q)
-#docker rm $(docker ps -a -q)
+TEAMID=`md5sum README.md | cut -d' ' -f 1`
+docker kill $(docker ps -q)
+docker rm $(docker ps -a -q)
 #docker build . -t $TEAMID
 #docker run -p 80:80 -p 8080:8080 -t $TEAMID
-sudo docker-compose up
+docker-compose -f docker-compose-dev.yml -p $TEAMID build
+docker-compose -f docker-compose-dev.yml -p $TEAMID up
