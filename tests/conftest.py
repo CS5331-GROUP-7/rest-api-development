@@ -18,4 +18,4 @@ def app():
         TESTING=True,
         SALT='IfHYBwi5ZUFZD9VaonnK',
     )
-    return app
+    return flask_app
