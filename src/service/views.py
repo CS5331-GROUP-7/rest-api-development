@@ -244,6 +244,7 @@ def diary_post():
 @views.route("/diary/create", methods=['POST'])
 def diary_creation():
     to_serialize = {'status': False}
+    title,text,public,token=None,None,None,None
     payload = request.get_json()
     payload2 = request.get_json()
     if payload2 and \
@@ -253,7 +254,7 @@ def diary_creation():
         title = payload2['title']
         text = payload2['text']
         public = payload2['public']
-    
+
     if payload:
         token_str = payload['token']
     else:
@@ -298,7 +299,7 @@ def diary_delete():
     if payload2 and \
             'id' in payload2:
         id = payload2['id']
-    
+
 
     if payload:
         token_str = payload['token']
@@ -346,7 +347,7 @@ def diary_permission():
 
         id = payload2['id']
         public = payload2['public']
-            
+
     if payload:
         token_str = payload['token']
     else:
